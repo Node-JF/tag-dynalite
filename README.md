@@ -8,7 +8,7 @@
 * Set a area number for each slot.
 * Set the number of Presets.
 * If Logical Channel control is required, set 'Enable Logical Channels' to 'Yes'. Set the number of Logical Channels.
-* Polling is not always required; it Polling is required, set 'Enable Polling' to 'Yes' and set a Poll Rate. Polling may be required if the Presets and Channels will be updated from other control methods simultaneously.
+* Polling is not always required; if Polling is required, set 'Enable Polling' to 'Yes'. Polling may be required if the Presets and Channels will be updated from other control methods simultaneously.
 * 'Logical Channel' faders can either be used in real-time, or snapshotted in Q-SYS to achieve 'preset' functionality. It is recommended to use Dyanlite Presets instead, however the Logical Channels have been tested to work with snapshots.
 
 ### Who do I talk to? ###
