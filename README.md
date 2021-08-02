@@ -1,3 +1,5 @@
+# Dynalite Envision Gateway
+
 ### How do I get set up? ###
 
 * Install the .qplug file to Documents -> Q-Sys Designer -> QSC -> Plugins
