@@ -1,6 +1,6 @@
 # Dynalite Envision Gateway
 
-This is a Q-SYS Plugin for Dynalite Envision Gateways. This Plugin user the ***DyNet Text Protocol***.
+This is a Q-SYS Plugin for Dynalite Envision Gateways. This Plugin uses the ***DyNet Text Protocol***.
 
 > Bug reports and feature requests should be sent to Jason Foord (jf@tag.com.au).
 
