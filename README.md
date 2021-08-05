@@ -1,18 +1,92 @@
 # Dynalite Envision Gateway
 
-### How do I get set up? ###
+This is a Q-SYS Plugin for Dynalite Envision Gateways. This Plugin user the ***DyNet Text Protocol***.
 
-* Install the .qplug file to Documents -> Q-Sys Designer -> QSC -> Plugins
+> Bug reports and feature requests should be sent to Jason Foord (jf@tag.com.au).
 
-### Q-SYS setup ###
+## How do I get set up?
 
-* In the plugin properties, set the number of required Area Slots. Each Area Slot will generate a new page that allows configuration of 1 area.
-* Set a area number for each slot.
-* Set the number of Presets.
-* If Logical Channel control is required, set 'Enable Logical Channels' to 'Yes'. Set the number of Logical Channels.
-* Polling is not always required; if Polling is required, set 'Enable Polling' to 'Yes'. Polling may be required if the Presets and Channels will be updated from other control methods simultaneously.
-* 'Logical Channel' faders can either be used in real-time, or snapshotted in Q-SYS to achieve 'preset' functionality. It is recommended to use Dyanlite Presets instead, however the Logical Channels have been tested to work with snapshots.
+See [Q-SYS Online Help File - Plugins](https://q-syshelp.qsc.com/#Schematic_Library/plugins.htm)
 
-### Who do I talk to? ###
+## Properties
 
-* Jason Foord (jf@tag.com.au)
+#### Area Slots
+
+Each area slot will generate a new page.
+
+> Each page configures a single area, or can be left on area '0' (none).
+
+#### Presets
+
+The number of preset slots available in each area slot.
+
+#### Enable Logical Channels
+
+Whether to show logical channel controls.
+
+#### Logical Channels
+
+The number of logical channel controls to show in each area slot.
+
+#### Enable Polling
+
+Whether the plugin will poll current presets and levels.
+
+#### Poll Rate (s)
+
+The polling interval.
+
+## Controls
+
+### Area Slot
+![Area Slot](./Screenshots/Dynalite%20Plugin.JPG)
+
+#### IP Address
+
+The IP Address of the device.
+
+> This is a global control that displays on every page.
+
+#### Device Status
+
+Displays the device's status.
+
+> This is a global control that displays on every page.
+
+#### Connect
+
+Toggles the connection to the device.
+
+> This is a global control that displays on every page.
+
+#### Area Controls
+
+> ##### Number
+
+> The Area to control. Leave at '0' if unallocated.
+
+>> Area information is configured in the *Dynalite System Builder* software.
+
+> #### Presets
+
+>> ##### Fade Time
+
+>> The fade time to recall the preset with when loaded.
+
+>> ##### Load
+
+>> Recalls the preset.
+
+>> ##### Match
+
+>> Indicates if the preset is currently active.
+
+>>> Adjusting a logical channel level manually will clear all preset match indicators.
+
+> ##### Channels
+
+>> ##### Level
+
+>> Control of the logical channel level.
+
+>>> Can either be used in real-time, or snapshotted in Q-SYS to achieve 'preset' functionality.
