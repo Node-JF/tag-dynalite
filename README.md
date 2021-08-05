@@ -39,7 +39,7 @@ The polling interval.
 ## Controls
 
 ### Area Slot
-![Area Slot](./Screenshots/Dynalite%20Plugin.JPG)
+![Area Slot](./Screenshots/Dynalite%20Plugin.jpg)
 
 #### IP Address
 
