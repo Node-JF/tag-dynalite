@@ -1,7 +1,7 @@
 PluginInfo = 
 {
   Name = "TAG~Dynalite~Envision Gateway",
-  Version = "1.0",
+  Version = "1.1",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
   Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB). This plugin uses the DyNet Text protocol.",
   ShowDebug = true,
@@ -38,6 +38,20 @@ end
 function GetProperties()
 
     local props = {
+        {
+          Name = "Protocol",
+          Type = "enum",
+          Choices = {
+            "DyNet 2",
+            "DyNet Text"
+          },
+          Value = "DyNet 2"
+        },
+        {
+          Name = "Port",
+          Type = "string",
+          Value = "50000"
+        },
         {
             Name = "Area Slots",
             Type = "integer",
@@ -85,6 +99,7 @@ end
 
 function RectifyProperties(props)
 
+    props["Port"].IsHidden = props["Protocol"].Value == "DyNet Text"
     props["Logical Channels"].IsHidden = props["Enable Logical Channels"].Value == "No"
     props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No"
 
@@ -181,9 +196,9 @@ function GetControls(props)
             table.insert(ctrls, {
                 Name = string.format("channel_%d", channel),
                 ControlType = "Knob",
-                ControlUnit = "Percent",
-                Min = 0,
-                Max = 100,
+                ControlUnit = (props['Protocol'].Value == "DyNet Text") and "Percent" or "Integer",
+                Min = (props['Protocol'].Value == "DyNet Text") and 0 or 255,
+                Max = (props['Protocol'].Value == "DyNet Text") and 100 or 0,
                 UserPin = true,
                 PinStyle = "Both",
                 Count = count
