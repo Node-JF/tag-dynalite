@@ -3,7 +3,7 @@ PluginInfo =
   Name = "TAG~Dynalite~Envision Gateway",
   Version = "1.1",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
-  Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB). This plugin uses the DyNet Text protocol.",
+  Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB).",
   ShowDebug = true,
   Author = "Jason Foord"
 }
@@ -39,18 +39,13 @@ function GetProperties()
 
     local props = {
         {
-          Name = "Protocol",
+          Name = "DyNet Protocol",
           Type = "enum",
           Choices = {
-            "DyNet 2",
-            "DyNet Text"
+            "2",
+            "Text"
           },
-          Value = "DyNet 2"
-        },
-        {
-          Name = "Port",
-          Type = "string",
-          Value = "50000"
+          Value = "2"
         },
         {
             Name = "Area Slots",
@@ -83,14 +78,14 @@ function GetProperties()
             Name = "Enable Polling",
             Type = "enum",
             Choices = {"Yes", "No"},
-            Value = "No"
+            Value = "Yes"
         },
         {
             Name = "Poll Rate (s)",
             Type = "integer",
             Min  = 5,
             Max = 60,
-            Value = 15
+            Value = 5
         },
 
     }
@@ -99,7 +94,6 @@ end
 
 function RectifyProperties(props)
 
-    props["Port"].IsHidden = props["Protocol"].Value == "DyNet Text"
     props["Logical Channels"].IsHidden = props["Enable Logical Channels"].Value == "No"
     props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No"
 
@@ -130,6 +124,16 @@ function GetControls(props)
     })
 
     table.insert(ctrls, {
+      Name = "port",
+      ControlType = "Knob",
+      ControlUnit = "Integer",
+      Min = 49152,
+      Max = 65535,
+      UserPin = true,
+      PinStyle = "Both"
+  })
+
+    table.insert(ctrls, {
         Name = "device_status",
         ControlType = "Indicator",
         IndicatorType = "Status",
@@ -156,6 +160,15 @@ function GetControls(props)
         PinStyle = "Both",
         Count = count
     })
+
+    table.insert(ctrls, {
+      Name = "area_status",
+      ControlType = "Indicator",
+      IndicatorType = "Status",
+      UserPin = true,
+      PinStyle = "Output",
+      Count = count
+  })
 
     for preset = 1, props["Presets"].Value do
 
@@ -196,9 +209,9 @@ function GetControls(props)
             table.insert(ctrls, {
                 Name = string.format("channel_%d", channel),
                 ControlType = "Knob",
-                ControlUnit = (props['Protocol'].Value == "DyNet Text") and "Percent" or "Integer",
-                Min = (props['Protocol'].Value == "DyNet Text") and 0 or 255,
-                Max = (props['Protocol'].Value == "DyNet Text") and 100 or 0,
+                ControlUnit = (props['DyNet Protocol'].Value == "Text") and "Percent" or "Integer",
+                Min = (props['DyNet Protocol'].Value == "Text") and 0 or 255,
+                Max = (props['DyNet Protocol'].Value == "Text") and 100 or 0,
                 UserPin = true,
                 PinStyle = "Both",
                 Count = count
@@ -252,9 +265,30 @@ function GetControlLayout(props)
 
     table.insert(graphics, {
         Type = "Label",
-        Text = "Device Status",
+        Text = "Port",
         Size = Defaults.LabelSize,
         Position = {0, 206},
+        HTextAlign = "Left",
+        FontSize = Defaults.FontSize
+    })
+
+    table.insert(graphics, {
+      Type = "Label",
+      Text = (props['DyNet Protocol'].Value == "Text") and "DyNet Text Uses Port 23" or "Default Server Port is 50000",
+      Size = {Defaults.TextBoxSize[1] - 36, 16},
+      Position = {Defaults.LabelSize[1] + 36, 206},
+      HTextAlign = "Center",
+      FontSize = Defaults.FontSize,
+      Font = "Roboto",
+      FontSize = 10,
+      FontStyle = "Italic"
+  }) 
+
+    table.insert(graphics, {
+        Type = "Label",
+        Text = "Device Status",
+        Size = Defaults.LabelSize,
+        Position = {0, 226},
         HTextAlign = "Left",
         FontSize = Defaults.FontSize
     })
@@ -263,7 +297,7 @@ function GetControlLayout(props)
         Type = "Label",
         Text = "Connect",
         Size = Defaults.LabelSize,
-        Position = {0, 226},
+        Position = {0, 246},
         HTextAlign = "Left",
         FontSize = Defaults.FontSize,
     })
@@ -276,20 +310,28 @@ function GetControlLayout(props)
         Position = {max_width-Defaults.TextBoxSize[1], 186}
     }
 
+    layout["port"] = {
+      PrettyName = "Device~Port",
+      Style = "Text",
+      TextBoxStyle = "Normal",
+      Size = {36, 16},
+      Position = {max_width-Defaults.TextBoxSize[1], 206}
+  }
+
     layout["device_status"] = {
         PrettyName = "Device~Status",
         Style = "Text",
         TextBoxStyle = "Normal",
         IsReadOnly = true,
         Size = Defaults.StatusSize,
-        Position = {max_width-Defaults.StatusSize[1], 206}
+        Position = {max_width-Defaults.StatusSize[1], 226}
     }
 
     layout["connect"] = {
         PrettyName = "Device~Connect",
         Style = "Button",
         ButtonStyle = "Toggle",
-        Position = {Defaults.LabelSize[1], 226},
+        Position = {Defaults.LabelSize[1], 246},
         Color = {0, 159, 60}
     }
     
@@ -319,16 +361,6 @@ function GetControlLayout(props)
         FontSize = Defaults.FontSize,
     })
 
-    --[[table.insert(graphics, {
-        Type = "Label",
-        Text = "Fade Time (s)",
-        Size = Defaults.LabelSize,
-        Position = {max_width - Defaults.LabelSize[1] - 36, starting_depth + 22},
-        HTextAlign = "Left",
-        Font = Defaults.Font,
-        FontSize = Defaults.FontSize,
-    })]]
-
     layout[string.format("area_number %d", page_index)] = {
         PrettyName = string.format("Area Slot %d~Number", page_index),
         Style = "Text",
@@ -336,6 +368,14 @@ function GetControlLayout(props)
         Size = {36, 16},
         Position = {Defaults.LabelSize[1], starting_depth + 22},
     }
+
+    layout[string.format("area_status %d", page_index)] = {
+      PrettyName = string.format("Area Slot %d~Status", page_index),
+      Style = "Text",
+      --IndicatorType = "Status",
+      Size = {Defaults.StatusSize[1] - 41, 16},
+      Position = {Defaults.LabelSize[1] + 41, starting_depth + 22},
+  }
 
     local alt = true
     local x = 0
@@ -458,6 +498,73 @@ if not Controls then return end
 ----- Runtime Code -----
 ------------------------
 
+Protocol = {
+
+  ['WhoAreYou'] = {
+  
+    ['Text'] = "WhoAreYou",
+    
+    ['2'] = function()
+    
+    end
+    
+  },
+  
+  ['RequestCurrentPresets'] = {
+  
+    ['Text'] = function(area)
+      return string.format("RCP %s", area)
+    end,
+    
+    ['2'] = function(area)
+      return GeneratePacket({0x1C, tonumber(area), 0x00, 0x63, 0x00, 0x00, 0xFF})
+    end
+    
+  },
+  
+  ['RequestCurrentLevels'] = {
+  
+    ['Text'] = function(channel, area)
+      return string.format("RCL %d %s", channel, area)
+    end,
+    
+    ['2'] = function(channel, area)
+      return GeneratePacket({0x1C, tonumber(area), tonumber(channel) - 1, 0x61, 0x00, 0x00, 0xFF})
+    end
+    
+  },
+  
+  ['RecallPreset'] = {
+  
+    ['Text'] = function(preset, area, fade)
+      return string.format("p %s %s %s 255", preset, area, fade)
+    end,
+    
+    ['2'] = function(preset, area, fade)
+      local fade = bitstring.pack("16:int", (tonumber(fade) * 0.05))
+      local hi, low = fade:sub(1, 1), fade:sub(2, 2)
+      
+      --print( string.format( "[%X][%X]", string.byte(low), string.byte(hi) ) )
+      
+      return GeneratePacket({0x1C, tonumber(area), tonumber(preset) - 1, 0x65, string.byte(low), string.byte(hi), 0xFF})
+    end
+    
+  },
+  
+  ['SetLevel'] = {
+  
+    ['Text'] = function(channel, level, area)
+      return string.format('CL %d %d %d 200 255', channel, level, area)
+    end,
+    
+    ['2'] = function(channel, level, area)
+      return GeneratePacket({0x1C, tonumber(area), tonumber(channel) - 1, 0x71, tonumber(level), 0x05, 0xFF})
+    end
+    
+  },
+  
+}
+
 -- Constants
 commandQueue = {}
 max_controls = #Controls["area_number"]
@@ -466,15 +573,17 @@ max_controls = #Controls["area_number"]
 sock = TcpSocket.New()
 sock.ReadTimeout = 0
 sock.ReconnectTimeout = 1
-pollTimer = Timer.New()
+pollTimer, queueTimer = Timer.New(), Timer.New()
 
 -----------------
 ----- Setup -----
 -----------------
 
 function Connect()
+
+  isDyNetText = (Properties['DyNet Protocol'].Value == "Text")
   
-  pollTimer:Stop()
+  ResetTimers()
   
   -- empty command queue
   commandQueue = {}
@@ -491,8 +600,15 @@ function Connect()
   
   print("User.Info: Connecting Socket...")
   
-  sock:Connect(ip_addr, 23)
+  Controls['port'].IsDisabled = isDyNetText
   
+  sock:Connect(ip_addr, isDyNetText and 23 or math.floor(Controls['port'].Value))
+  
+end
+
+function ResetTimers()
+  pollTimer:Stop()
+  queueTimer:Stop()
 end
 
 -------------------
@@ -503,15 +619,13 @@ function Poll()
   
   print("User.Info: Polling...")
 
-  Enqueue('WhoAreYou')
+  --Enqueue('WhoAreYou')
   
   for i = 1, Properties["Area Slots"].Value do
-    GetCurrentPresets(Controls['area_number'][i].String)
+    GetCurrentPresets(Controls['area_number'][i].String, i)
     
-    GetChannelLevels(Controls['area_number'][i].String)
+    GetChannelLevels(Controls['area_number'][i].String, i)
   end
-  
-  Dequeue()
   
 end; pollTimer.EventHandler = Poll
 
@@ -524,6 +638,47 @@ function SetStatus(value, string)
   Controls["device_status"].Value = value and value or Controls["device_status"].Value
   Controls["device_status"].String = string and string or Controls["device_status"].String
   
+end
+
+function GeneratePacket(tbl)
+  
+  local sum, command = 0, ""
+  
+  -- sum the table
+  for i, byte in ipairs(tbl) do
+    sum = sum + byte
+  end
+  
+  -- pack to 8 bit signed integer
+  sum = bitstring.pack("8:int", sum)
+  
+  -- convert to binary stream
+  local bin = bitstring.binstream(sum)
+  
+  local new_bin = ""
+  
+  -- invert the binary stream
+  for i = 1, bin:len() do
+  
+    local bit = bin:sub(i, i)
+    local new_bit
+    
+    if bit == "0" then
+      new_bit = "1"
+    elseif bit == "1" then
+      new_bit = "0"
+    end
+    
+    new_bin = new_bin .. new_bit
+  end
+  
+  -- add 1, then pack to 8 bit signed integer again
+  local checksum = bitstring.pack("8:int", string.byte( bitstring.frombinstream(new_bin) ) + 1 )
+  
+  -- add it to the command
+  table.insert(tbl, string.byte(checksum))
+  
+  return tbl
 end
 
 function GetPositionsFromArea(area)
@@ -541,6 +696,8 @@ function GetPositionsFromArea(area)
 end
 
 function SetPresetLEDs(preset, area)
+
+  if (preset ~= 0) then print(string.format("Area [%s], is Updating to Preset [%d]", area, preset)) end
   
   -- get control positions for this area
   positions = GetPositionsFromArea(area)
@@ -558,17 +715,65 @@ function SetPresetLEDs(preset, area)
   end
 end
 
+function UpdateActiveChannels(channel, area, target, current)
+
+  if (Properties["Enable Logical Channels"].Value == "No") then return end
+
+  -- get control positions for this area
+  positions = GetPositionsFromArea(area)
+  
+  channel = tonumber(channel)
+  
+  -- for all returned positons, do;
+  for _, position in ipairs(positions) do
+  
+    print(string.format("Area [%s], Channel [%d] is %s", area, channel, ((area_props[position].isMoving[channel] == false) and string.format("Updating to Target [%d]", target) or "Not Available for Updates")))
+    
+    if area_props[position].isMoving[channel] == false then
+    
+      -- set the channel level for the incoming channel
+      Controls[string.format("channel_%d", channel)][position].String = target
+    
+    end
+  end
+end
+
+function AreaIsDuplicate(area)
+  matches = 0
+  for i, c in ipairs(Controls['area_number']) do
+    if (c.String == area) then matches = matches + 1 end
+    if (matches > 1) then return true end
+  end
+  return false
+end
+
 ------------------------
 ----- API Requests -----
 ------------------------
 
-function GetCurrentPresets(area)
+function GetCurrentPresets(area, position)
   
-  if tonumber(area) == 0 then return end
+  Controls['area_status'][position].Value = (tonumber(area) == 0) and 3 or 0
+  Controls['area_status'][position].String = (tonumber(area) == 0) and "Area Undefined" or ""
   
-  print(string.format("User.Info: Getting Preset for Area %s", area and area or "-"))
   
-  Enqueue(string.format("RCP %s", area))
+  if (tonumber(area) == 0) then
+  
+    Controls['area_status'][position].Value = 3
+    Controls['area_status'][position].String = "Area Undefined"
+    
+    return
+    
+  elseif AreaIsDuplicate(area) then
+    
+    Controls['area_status'][position].Value = 1
+    Controls['area_status'][position].String = "Area is Duplicate"
+    
+  end
+  
+  print(string.format("Getting Preset for Area [%s]", area and area or "-"))
+  
+  Enqueue(Protocol['RequestCurrentPresets'][Properties['DyNet Protocol'].Value](area))
   
 end
 
@@ -576,12 +781,13 @@ function GetChannelLevels(area)
   
   if Properties["Enable Logical Channels"].Value == "No" then return end 
 
-  if tonumber(area) == 0 then return end
+  if (tonumber(area) == 0) then return end
   
-  print(string.format("User.Info: Getting Channel Levels for Area %s", area and area or "-"))
+  print(string.format("Getting Channel Levels for Area [%s]", area and area or "-"))
   
   for ch = 1, Properties["Logical Channels"].Value do
-    Enqueue(string.format("RCL %d %s", ch, area))
+    
+    Enqueue(Protocol['RequestCurrentLevels'][Properties['DyNet Protocol'].Value](ch, area))
   end
   
 end
@@ -593,18 +799,33 @@ end
 function Enqueue(cmd, position)
   if not position then return table.insert(commandQueue, cmd) end
   table.insert(commandQueue, position, cmd)
+  if (position == 1) then queueTimer:Start(0) end
 end
 
 function Dequeue()
+  
+  queueTimer:Stop()
+  
   if #commandQueue > 0 and sock.IsConnected then
-      Send(commandQueue[1]);
-      table.remove(commandQueue, 1);
+      Send(table.remove(commandQueue, 1))
   end
+  
+  queueTimer:Start(0.1)
 end
 
 ------------------------------------
 ----- Socket & Data Management -----
 ------------------------------------
+
+function Begin()
+
+  Poll()
+          
+  queueTimer:Start(0)
+  
+  if Properties["Enable Polling"].Value == "Yes" then pollTimer:Start(Properties["Poll Rate (s)"].Value) end
+
+end
 
 sock.EventHandler = function(sock, evt, err)
 
@@ -612,55 +833,17 @@ sock.EventHandler = function(sock, evt, err)
   
     SetStatus(0, "Connected")
     
-    Enqueue('ReplyOK 0')
-    
-    Enqueue('Echo 0')
-    
-    Enqueue('Verbose')
-    
-    -- poll once on connect
-    Poll()
-    
-    if Properties["Enable Polling"].Value == "Yes" then pollTimer:Start(Properties["Poll Rate (s)"].Value) end
+    if (not isDyNetText) then Begin() end
     
   elseif evt == TcpSocket.Events.Data then
   
     SetStatus(0)
     
-    line = ""
+    local data = sock:Read(sock.BufferLength)
     
-    while line ~= nil do
-      
-      -- check for 'go ahead'
-      line = sock:ReadLine(TcpSocket.EOL.Custom, "\xff\xf9")
-      
-      -- check for CrLf
-      if not line then line = sock:ReadLine(TcpSocket.EOL.Any) end
-      
-      if not line then return Dequeue() end
-        
-      if line:find("Telnet Connection Established") then print(string.format("Ready: %s", line)) return Dequeue() end
-      
-      if not (line == "") then print(string.format("Sock.Data: '%s'", line)) end
-      
-      --[[device = line:match("I am (%w+)")
-      if device then Controls["device_type"].String = device end]]
-      
-      --[[box = line:match("Box (%w+)")
-      if box then Controls["box"].String = box end]]
-      
-      --[[version = line:match(", v([%w,]+)")
-      if version then Controls["version"].String = version:gsub(",", ".") end]]
-      
-      location = line:find("Reply with Current Preset")
-      if location then UpdateActivePreset(line:sub(location)) end
-      
-      location = line:find("Reply with Current Level")
-      if location then UpdateActiveChannels(line:sub(location)) end
-      
-      Dequeue()
-      
-    end
+    ParseData(data)
+    
+    queueTimer:Start(0)
     
   else
   
@@ -671,44 +854,111 @@ sock.EventHandler = function(sock, evt, err)
   end
 end
 
-function UpdateActivePreset(data)
-
-  for preset, area in string.gmatch(data, "Reply with Current Preset (%d+), Area (%d+)") do
-    SetPresetLEDs(preset, area)
+function ParseData(data)
+  
+  local hex = ""
+  
+  for i = 1, data:len() do
+    hex = hex .. string.format("[%02X]", string.byte(data:sub(i, i)))
   end
-end
-
-function UpdateActiveChannels(data)
-
-  if Properties["Enable Logical Channels"].Value == "No" then return end
-
-  for channel, area, target, current in string.gmatch(data, "Reply with Current Level Ch (%w+), Area (%d+), TargLev (%d+)%%, CurrLev (%d+)%%") do
+  
+  if (not data) then return end
+  
+  if (isDyNetText) then
     
-    -- get control positions for this area
-    positions = GetPositionsFromArea(area)
+    --print(string.format("Data:%s", data))
     
-    channel = tonumber(channel)
-    
-    -- for all returned positons, do;
-    for _, position in ipairs(positions) do
-    
-      print(string.format("Area %s, Channel %d is %s", area, channel, ((area_props[position].isMoving[channel] == false) and "Updating from Polling" or "Not Available for Updates")))
+    if data:find("Telnet Connection Established") then
       
-      if area_props[position].isMoving[channel] == false then
+      Enqueue('ReplyOK 0')
+      Enqueue('Echo 0')
+      Enqueue('WhoAreYou')
+      Enqueue('Verbose')
       
-        -- set the channel level for the incoming channel
-        Controls[string.format("channel_%d", channel)][position].String = target
+      Begin()
       
+    return end
+    
+    --if not (line == "") then print(string.format("Sock.Data: '%s'", line)) end
+    
+    --[[device = line:match("I am (%w+)")
+    if device then Controls["device_type"].String = device end]]
+    
+    --[[box = line:match("Box (%w+)")
+    if box then Controls["box"].String = box end]]
+    
+    --[[version = line:match(", v([%w,]+)")
+    if version then Controls["version"].String = version:gsub(",", ".") end]]
+    
+    preset, area = data:match("Reply with Current Preset (%d+), Area (%d+)")
+    if (preset and area) then SetPresetLEDs(preset, area) end
+      
+    channel, area, target, current = data:match("Reply with Current Level Ch (%w+), Area (%d+), TargLev (%d+)%%, CurrLev (%d+)%%")
+    if (channel and area and target and current) then UpdateActiveChannels(channel, area, target, current) end
+    
+  else
+  
+    print(string.format("Data:%s", hex))
+  
+    if (string.byte(data:sub(1, 1)) == 0xAC) then
+    
+      if (string.byte(data:sub(2, 2)) == 0x03) then
+      
+        local area = string.byte(data:sub(8, 8))
+        local preset = string.byte(data:sub(12, 12))
+        
+        SetPresetLEDs(preset, area)
+        
+      elseif (string.byte(data:sub(2, 2)) == 0x07) then
+      
+        local area = string.byte(data:sub(8, 8))
+        local channel = string.byte(data:sub(12, 12))
+        local target = string.byte(data:sub(16, 16))
+        
+        -- convert to fader range
+        target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
+        
+        target = math.floor(target)
+        
+        --print(target)
+        
+        UpdateActiveChannels(channel, area, target, current)
+        
       end
+      
     end
   end
+  
 end
 
 function Send(data)
   
   if not sock.IsConnected then return print("User.Warning: Socket not Connected") end
   
-  sock:Write(data.."\r")
+  local command = ""
+  
+  if (isDyNetText) then
+    
+    print(string.format("Sending ASCII:%s", data))
+    
+    command = data
+    
+  else
+  
+    local hex = ""
+    
+    for i, byte in ipairs(data) do
+      command = command .. string.char(byte)
+      hex = hex .. string.format("[%02X]", byte)
+    end
+    
+    print(string.format("Sending HEX:%s", hex))
+  
+  end
+  
+  if (isDyNetText) then command = command .. '\r' end
+  
+  sock:Write(command)
   
 end
 
@@ -717,7 +967,10 @@ end
 -------------------------
 
 Controls["ip_address"].EventHandler = Connect
+Controls["port"].EventHandler = Connect
 Controls["connect"].EventHandler = Connect
+
+queueTimer.EventHandler = Dequeue
 
   -------------------------------------------------
   -- Variables/Constants for Fader Functionality --
@@ -760,12 +1013,12 @@ for position, area in ipairs(Controls["area_number"]) do
     -- to stop spamming requests if someone is using the mouse to drag the 'zone number' control
     area_props[position].areaSpamTimer.EventHandler = function(t)
       t:Stop()
-      GetCurrentPresets(area.String)
-      GetChannelLevels(area.String)
-      
-      Dequeue()
+      area_props[position].validPreset = true
+      GetCurrentPresets(area.String, position)
+      GetChannelLevels(area.String, position)
+    
     end
-
+    
     area_props[position].areaSpamTimer:Start(.5)
   
   end
@@ -776,20 +1029,21 @@ for position, area in ipairs(Controls["area_number"]) do
     Controls[string.format("preset_load_%d", preset)][position].EventHandler = function()
       
       -- is a valid preset state because a preset has been recalled
+      
+      print(string.format("Position [%s] Preset is Valid", position))
       area_props[position].validPreset = true
       
-      Enqueue(string.format("p %s %s %s 255", preset, area.String, math.floor(Controls[string.format("fade_time_%d", preset)][position].Value * 1000)))
+      Enqueue(Protocol['RecallPreset'][Properties['DyNet Protocol'].Value](preset, area.String, math.floor(Controls[string.format("fade_time_%d", preset)][position].Value * 1000)), 1)
       
-      GetCurrentPresets(area.String)
+      GetCurrentPresets(area.String, position)
       
-      GetChannelLevels(area.String)
+      GetChannelLevels(area.String, position)
       
-      Dequeue()
     end
   
   end
   
-  if Properties["Enable Logical Channels"].Value == "Yes" then
+  if (Properties["Enable Logical Channels"].Value == "Yes") then
 
     -- set up fader eventhandlers
     for channel = 1, Properties["Logical Channels"].Value do
@@ -798,13 +1052,18 @@ for position, area in ipairs(Controls["area_number"]) do
       area_props[position].isMovingTimers[channel].EventHandler = function(t)
         t:Stop()
         area_props[position].isMoving[channel] = false
-        print(string.format("Area %s, Channel %d is %s", area.String, channel, ((area_props[position].isMoving[channel] == false) and "Listening for Polling Updates" or "Not Available")))
+        print(string.format("Area [%s], Channel [%d] is %s", area.String, channel, ((area_props[position].isMoving[channel] == false) and "Listening for Polling Updates" or "Not Available")))
       end
 
       Controls[string.format("channel_%d", channel)][position].EventHandler = function(ctl)
       
         -- not a valid preset state as the fader has been moved manually
-        area_props[position].validPreset = false
+        if (area_props[position].isMoving[channel] == false) then
+        
+          print(string.format("Position [%s] Preset is Invalid Becase [Manual Logical Channel Adjustment]", position))
+          area_props[position].validPreset = false
+          
+        end
         
         SetPresetLEDs(0, area.String)
         
@@ -823,8 +1082,7 @@ for position, area in ipairs(Controls["area_number"]) do
           local level = math.floor(ctl.Value)
           
           -- write this command directly so there's no delay which would occur by queueing
-          Send(string.format('CL %d %d %d 200 255', channel, level, area.String))
-          
+          Send(Protocol['SetLevel'][Properties['DyNet Protocol'].Value](channel, level, area.String))
           area_props[position].canUpdate[channel] = true
         
           area_props[position].isMovingTimers[channel]:Start(1)

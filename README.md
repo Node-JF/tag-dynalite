@@ -10,11 +10,11 @@ See [Q-SYS Online Help File - Plugins](https://q-syshelp.qsc.com/#Schematic_Libr
 
 ## Properties
 
-#### Protocol
+#### DyNet Protocol
 
 The protocol to use.
 
-> DyNet 2 | DyNet Text
+> 2 | Text
 
 >> The Protocol of the Envision Gateway is set under the *Port Editor* tabe in *Dynalite System Builder*
 
@@ -80,6 +80,12 @@ Toggles the connection to the device.
 > The Area to control. Leave at '0' if unallocated.
 
 >> Area information is configured in the *Dynalite System Builder* software.
+
+> ##### Status
+
+> The plugin-determined status of the area. ***Avoid having the same area number in multiple slots; it won't break everything, but the feedback hasn't been fully optimised for this use case as it shouldn't exist.***
+
+>> Area Unallocated | Area is Duplicate | OK
 
 > #### Presets
 
