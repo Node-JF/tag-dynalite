@@ -16,7 +16,7 @@ The protocol to use.
 
 > 2 | Text
 
->> The Protocol of the Envision Gateway is set under the *Port Editor* tabe in *Dynalite System Builder*
+>> The Protocol of the Envision Gateway is set under the *Port Editor* tab in *Dynalite System Builder*
 
 #### Port
 
