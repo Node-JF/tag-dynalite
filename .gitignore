@@ -3,7 +3,15 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
+#Old Dynalite QPLUG
+dynalite.qplug
+
+# Lua
+*.lua
+
 # Node artifact files
+plugincompile/
+.vscode/
 node_modules/
 dist/
 
