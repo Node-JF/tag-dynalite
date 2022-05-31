@@ -18,7 +18,23 @@ The protocol to use.
 
 >> The Protocol of the Envision Gateway is set under the *Port Editor* tab in *Dynalite System Builder*
 
-#### Port
+#### Enable Polling
+
+Whether the plugin will poll current presets and levels.
+
+> Polling is not necessary when using DyNet Text Protocol - it is event driven.
+
+#### Poll Rate (s)
+
+The polling interval.
+
+> Polling is not necessary when using DyNet Text Protocol - it is event driven.
+
+#### Connection Type
+
+The connection method.
+
+> TCP | Serial
 
 #### Area Slots
 
@@ -42,14 +58,6 @@ The number of logical channel controls to show in each area slot.
 
 > For DyNet 2, the value range is ***255 - 0***
 
-#### Enable Polling
-
-Whether the plugin will poll current presets and levels.
-
-#### Poll Rate (s)
-
-The polling interval.
-
 ## Controls
 
 ### Area Slot
@@ -60,6 +68,16 @@ The polling interval.
 The IP Address of the device.
 
 > This is a global control that displays on every page.
+
+#### Port
+
+The TCP port to use.
+
+> This is a global control that displays on every page.
+
+>> DyNet Text = 23
+
+>> DyNet 2 = 49152-65535 | 50000
 
 #### Device Status
 

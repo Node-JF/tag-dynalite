@@ -5,8 +5,8 @@
 -- Information block for the plugin
 PluginInfo = {
   Name = "TAG~Dynalite~Envision Gateway",
-  Version = "1.1",
-  BuildVersion = "1.1.0.0",
+  Version = "2.0",
+  BuildVersion = "1.1.0.16",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
   Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB).",
   ShowDebug = true,
@@ -76,6 +76,28 @@ function GetProperties()
       Value = "2"
     },
     {
+      Name = "Enable Polling",
+      Type = "enum",
+      Choices = {"Yes", "No"},
+      Value = "Yes"
+    },
+    {
+        Name = "Poll Rate (s)",
+        Type = "integer",
+        Min  = 5,
+        Max = 60,
+        Value = 5
+    },
+    {
+      Name = "Connection Type",
+      Type = "enum",
+      Choices = {
+        "TCP",
+        "Serial"
+      },
+      Value = "TCP"
+    },
+    {
         Name = "Area Slots",
         Type = "integer",
         Min  = 2,
@@ -101,20 +123,7 @@ function GetProperties()
         Min  = 1,
         Max = 50,
         Value = 4
-    },
-    {
-        Name = "Enable Polling",
-        Type = "enum",
-        Choices = {"Yes", "No"},
-        Value = "Yes"
-    },
-    {
-        Name = "Poll Rate (s)",
-        Type = "integer",
-        Min  = 5,
-        Max = 60,
-        Value = 5
-    },
+    }
   
   }
   return props
@@ -123,13 +132,26 @@ end
 -- Optional function to define pins on the plugin that are not connected to a Control
 function GetPins(props)
   local pins = {}
+  
+  if props['Connection Type'].Value == "Serial" then
+      table.insert(pins, {
+          Name = "Serial",
+          Direction = "input",
+          Domain = "serial",
+      })
+  end
   return pins
 end
 
 -- Optional function to update available properties when properties are altered by the user
 function RectifyProperties(props)
   props["Logical Channels"].IsHidden = props["Enable Logical Channels"].Value == "No"
-  props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No"
+  props["Enable Polling"].IsHidden = props["DyNet Protocol"].Value == "Text"
+  props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No" or props["DyNet Protocol"].Value == "Text"
+  -- props["Connection Type"].IsHidden = props["DyNet Protocol"].Value == "Text"
+  -- if props["DyNet Protocol"].Value == "Text" then
+  --   props["Connection Type"].Value = "TCP"
+  -- end
   return props
 end
 
@@ -163,6 +185,7 @@ function GetControls(props)
     ControlUnit = "Integer",
     Min = 49152,
     Max = 65535,
+    DefaultValue = 50000,
     UserPin = true,
     PinStyle = "Both"
   })
@@ -307,11 +330,10 @@ function GetControlLayout(props)
   
   table.insert(graphics, {
     Type = "Label",
-    Text = (props['DyNet Protocol'].Value == "Text") and "DyNet Text Uses Port 23" or "Default Server Port is 50000",
+    Text = (props['Connection Type'].Value == "Serial") and "TCP Controls Disabled" or (props['DyNet Protocol'].Value == "Text") and "DyNet Text Uses Port 23" or "Default Server Port is 50000",
     Size = {Defaults.TextBoxSize[1] - 36, 16},
     Position = {Defaults.LabelSize[1] + 36, 206},
     HTextAlign = "Center",
-    FontSize = Defaults.FontSize,
     Font = "Roboto",
     FontSize = 10,
     FontStyle = "Italic"
@@ -526,6 +548,12 @@ end
 
 --Start event based logic
 if Controls then
+
+  -- Constants
+  commandQueue = {}
+  max_controls = #Controls["area_number"]
+  pollTimer, queueTimer = Timer.New(), Timer.New()
+  
   Protocol = {
   
     ['WhoAreYou'] = {
@@ -592,56 +620,253 @@ if Controls then
     },
     
   }
-  
-  -- Constants
-  commandQueue = {}
-  max_controls = #Controls["area_number"]
-  
-  -- Services
-  sock = TcpSocket.New()
-  sock.ReadTimeout = 0
-  sock.ReconnectTimeout = 1
-  pollTimer, queueTimer = Timer.New(), Timer.New()
-  
-  -----------------
-  ----- Setup -----
-  -----------------
-  
-  function Connect()
-  
-    isDyNetText = (Properties['DyNet Protocol'].Value == "Text")
-    
-    ResetTimers()
-    
-    -- empty command queue
-    commandQueue = {}
-    
-    if sock.IsConnected then sock:Disconnect() end
-    
-    if not Controls["connect"].Boolean then SetStatus(3, "Component Manually Disconnected") return sock:Disconnect() end
-    
-    local ip_addr = Controls["ip_address"].String:match('(%d?%d?%d%.%d?%d?%d%.%d?%d?%d%.%d?%d?%d)')
-    
-    Controls["ip_address"].Color = ip_addr and 'Green' or 'Red'
-    
-    if not ip_addr then return print("User.Error: IP address invalid") end
-    
-    print("User.Info: Connecting Socket...")
-    
-    Controls['port'].IsDisabled = isDyNetText
-    
-    sock:Connect(ip_addr, isDyNetText and 23 or math.floor(Controls['port'].Value))
-    
-  end
-  
+
   function ResetTimers()
     pollTimer:Stop()
     queueTimer:Stop()
   end
   
+  function DisableTcpControls(bool)
+    Controls["ip_address"].IsDisabled = bool
+    Controls["port"].IsDisabled = bool
+  end
+
+  if Properties["Connection Type"].Value == "TCP" then
+
+    -- Services
+    sock = TcpSocket.New()
+    sock.ReadTimeout = 0
+    sock.ReconnectTimeout = 1
+    
+    -----------------
+    ----- Setup -----
+    -----------------
+    
+    function Connect()
+    
+      isDyNetText = (Properties['DyNet Protocol'].Value == "Text")
+      
+      ResetTimers()
+      
+      -- empty command queue
+      commandQueue = {}
+      
+      if sock.IsConnected then sock:Disconnect() end
+      
+      if not Controls["connect"].Boolean then SetStatus(3, "Component Manually Disconnected") return sock:Disconnect() end
+      
+      local ip_addr = Controls["ip_address"].String:match('(%d?%d?%d%.%d?%d?%d%.%d?%d?%d%.%d?%d?%d)')
+      
+      Controls["ip_address"].Color = ip_addr and 'Green' or 'Red'
+      
+      if not ip_addr then return print("User.Error: IP address invalid") end
+      
+      print("User.Info: Connecting Socket...")
+      
+      Controls['port'].IsDisabled = isDyNetText
+      
+      sock:Connect(ip_addr, isDyNetText and 23 or math.floor(Controls['port'].Value))
+      
+    end
+    
+    ----------------------------
+    ----- Queue Management -----
+    ----------------------------
+    
+    function Dequeue()
+      
+      queueTimer:Stop()
+      
+      if #commandQueue > 0 and sock.IsConnected then
+          Send(table.remove(commandQueue, 1))
+      end
+      
+      queueTimer:Start(0.1)
+    end
+    
+    ------------------------------------
+    ----- Socket & Data Management -----
+    ------------------------------------
+    
+    sock.EventHandler = function(sock, evt, err)
+    
+      if evt == TcpSocket.Events.Connected then
+      
+        SetStatus(0, "Connected")
+        
+        if (not isDyNetText) then Begin() end
+        
+      elseif evt == TcpSocket.Events.Data then
+      
+        SetStatus(0)
+        
+        local data = sock:Read(sock.BufferLength)
+        
+        ParseData(data)
+        
+        queueTimer:Start(0)
+        
+      else
+      
+        SetStatus(4, evt)
+      
+        Connect()
+        
+      end
+    end
+    
+    function Send(data)
+      
+      if not sock.IsConnected then return print("User.Warning: Socket not Connected") end
+      
+      local command = ""
+      
+      if (isDyNetText) then
+        
+        print(string.format("Sending ASCII:%s", data))
+        
+        command = data
+        
+      else
+      
+        local hex = ""
+        
+        for i, byte in ipairs(data) do
+          command = command .. string.char(byte)
+          hex = hex .. string.format("[%02X]", byte)
+        end
+        
+        print(string.format("Sending HEX:%s", hex))
+      
+      end
+      
+      if (isDyNetText) then command = command .. '\r' end
+      
+      sock:Write(command)
+      
+    end
+
+  elseif Properties["Connection Type"].Value == "Serial" then
+    
+    -- Services
+    serial = SerialPorts[1]
+    -- sock.ReadTimeout = 0
+    -- sock.ReconnectTimeout = 1
+    
+    -----------------
+    ----- Setup -----
+    -----------------
+    
+    function Connect()
+    
+      isDyNetText = (Properties['DyNet Protocol'].Value == "Text")
+      
+      ResetTimers()
+      
+      -- empty command queue
+      commandQueue = {}
+      
+      if not Controls["connect"].Boolean then SetStatus(3, "Component Manually Disconnected") return serial:Close() end
+      
+      print("User.Info: Connecting Serial Port...")
+      
+      if not serial.IsOpen then
+        serial:Open(9600, 8, 'N') --9600,N,8,1
+      end
+    end
+    
+    ----------------------------
+    ----- Queue Management -----
+    ----------------------------
+    
+    function Dequeue()
+      
+      queueTimer:Stop()
+      
+      if #commandQueue > 0 and serial.IsOpen then
+          Send(table.remove(commandQueue, 1))
+      end
+      
+      queueTimer:Start(0.1)
+    end
+    
+    ------------------------------------
+    ----- Serial & Data Management -----
+    ------------------------------------
+    
+    serial.EventHandler = function(port, evt)
+    
+      if evt == SerialPorts.Events.Connected then
+      
+        SetStatus(0, "Connected")
+        
+        if (not isDyNetText) then Begin() end
+        
+      elseif evt == SerialPorts.Events.Data then
+      
+        SetStatus(0)
+        
+        local data = serial:Read(serial.BufferLength)
+        
+        ParseData(data)
+        
+        queueTimer:Start(0)
+        
+      else
+      
+        SetStatus(4, evt)
+      
+        Timer.CallAfter(Connect, 1)
+        
+      end
+    end
+    
+    function Send(data)
+      
+      if not serial.IsOpen then return print("User.Warning: Serial Port not Connected") end
+      
+      local command = ""
+      
+      if (isDyNetText) then
+        
+        print(string.format("Sending ASCII:%s", data))
+        
+        command = data
+        
+      else
+      
+        local hex = ""
+        
+        for i, byte in ipairs(data) do
+          command = command .. string.char(byte)
+          hex = hex .. string.format("[%02X]", byte)
+        end
+        
+        print(string.format("Sending HEX:%s", hex))
+      
+      end
+      
+      if (isDyNetText) then command = command .. '\r' end
+      
+      serial:Write(command)
+      
+    end
+  
+  end
+
   -------------------
   ----- Polling -----
   -------------------
+  
+  function Begin()
+  
+    Poll()
+            
+    queueTimer:Start(0)
+    
+    if Properties["Enable Polling"].Value == "Yes" then pollTimer:Start(Properties["Poll Rate (s)"].Value) end
+  
+  end
   
   function Poll()
     
@@ -656,6 +881,12 @@ if Controls then
     end
     
   end; pollTimer.EventHandler = Poll
+  
+  function Enqueue(cmd, position)
+    if not position then return table.insert(commandQueue, cmd) end
+    table.insert(commandQueue, position, cmd)
+    if (position == 1) then queueTimer:Start(0) end
+  end
   
   ----------------------------
   ----- Helper Functions -----
@@ -708,6 +939,8 @@ if Controls then
     
     return tbl
   end
+  
+  
   
   function GetPositionsFromArea(area)
     
@@ -775,6 +1008,8 @@ if Controls then
     return false
   end
   
+  
+  
   ------------------------
   ----- API Requests -----
   ------------------------
@@ -818,68 +1053,6 @@ if Controls then
       Enqueue(Protocol['RequestCurrentLevels'][Properties['DyNet Protocol'].Value](ch, area))
     end
     
-  end
-  
-  ----------------------------
-  ----- Queue Management -----
-  ----------------------------
-  
-  function Enqueue(cmd, position)
-    if not position then return table.insert(commandQueue, cmd) end
-    table.insert(commandQueue, position, cmd)
-    if (position == 1) then queueTimer:Start(0) end
-  end
-  
-  function Dequeue()
-    
-    queueTimer:Stop()
-    
-    if #commandQueue > 0 and sock.IsConnected then
-        Send(table.remove(commandQueue, 1))
-    end
-    
-    queueTimer:Start(0.1)
-  end
-  
-  ------------------------------------
-  ----- Socket & Data Management -----
-  ------------------------------------
-  
-  function Begin()
-  
-    Poll()
-            
-    queueTimer:Start(0)
-    
-    if Properties["Enable Polling"].Value == "Yes" then pollTimer:Start(Properties["Poll Rate (s)"].Value) end
-  
-  end
-  
-  sock.EventHandler = function(sock, evt, err)
-  
-    if evt == TcpSocket.Events.Connected then
-    
-      SetStatus(0, "Connected")
-      
-      if (not isDyNetText) then Begin() end
-      
-    elseif evt == TcpSocket.Events.Data then
-    
-      SetStatus(0)
-      
-      local data = sock:Read(sock.BufferLength)
-      
-      ParseData(data)
-      
-      queueTimer:Start(0)
-      
-    else
-    
-      SetStatus(4, evt)
-    
-      Connect()
-      
-    end
   end
   
   function ParseData(data)
@@ -958,38 +1131,7 @@ if Controls then
     end
     
   end
-  
-  function Send(data)
-    
-    if not sock.IsConnected then return print("User.Warning: Socket not Connected") end
-    
-    local command = ""
-    
-    if (isDyNetText) then
-      
-      print(string.format("Sending ASCII:%s", data))
-      
-      command = data
-      
-    else
-    
-      local hex = ""
-      
-      for i, byte in ipairs(data) do
-        command = command .. string.char(byte)
-        hex = hex .. string.format("[%02X]", byte)
-      end
-      
-      print(string.format("Sending HEX:%s", hex))
-    
-    end
-    
-    if (isDyNetText) then command = command .. '\r' end
-    
-    sock:Write(command)
-    
-  end
-  
+
   -------------------------
   ----- EventHandlers -----
   -------------------------
@@ -1029,9 +1171,9 @@ if Controls then
       
     end
   
-    -------------------------------------------------
-    -------------------------------------------------
-    -------------------------------------------------
+  -------------------------------------------------
+  -------------------------------------------------
+  -------------------------------------------------
   
   for position, area in ipairs(Controls["area_number"]) do
     
@@ -1122,6 +1264,9 @@ if Controls then
       end
     end
   end
+
+  DisableTcpControls((Properties["Connection Type"].Value == 'Serial'))
   
   Connect()
+
 end
