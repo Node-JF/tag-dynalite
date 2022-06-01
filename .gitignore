@@ -4,7 +4,7 @@
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
 # Lua
-*.lua
+# *.lua
 
 # Node artifact files
 plugincompile/
