@@ -16,7 +16,7 @@ The protocol to use.
 
 > 2 | Text
 
->> The Protocol of the Envision Gateway is set under the *Port Editor* tab in *Dynalite System Builder*
+> The Protocol of the Envision Gateway is set under the *Port Editor* tab in *Dynalite System Builder*
 
 #### Enable Polling
 
@@ -75,9 +75,9 @@ The TCP port to use.
 
 > This is a global control that displays on every page.
 
->> DyNet Text = 23
+> DyNet Text = 23
 
->> DyNet 2 = 49152-65535 | 50000
+> DyNet 2 = 49152-65535 | 50000
 
 #### Device Status
 
@@ -93,38 +93,38 @@ Toggles the connection to the device.
 
 #### Area Controls
 
-> ##### Number
+ ##### Number
 
-> The Area to control. Leave at '0' if unallocated.
+ The Area to control. Leave at '0' if unallocated.
 
->> Area information is configured in the *Dynalite System Builder* software.
+> Area information is configured in the *Dynalite System Builder* software.
 
-> ##### Status
+ ##### Status
 
-> The plugin-determined status of the area. ***Avoid having the same area number in multiple slots; it won't break everything, but the feedback hasn't been fully optimised for this use case as it shouldn't exist.***
+ The plugin-determined status of the area. ***Avoid having the same area number in multiple slots; it won't break everything, but the feedback hasn't been fully optimised for this use case as it shouldn't exist.***
 
->> Area Unallocated | Area is Duplicate | OK
+> Area Unallocated | Area is Duplicate | OK
 
-> #### Presets
+ #### Presets
 
->> ##### Fade Time
+ ##### Fade Time
 
->> The fade time to recall the preset with when loaded.
+ The fade time to recall the preset with when loaded.
 
->> ##### Load
+ ##### Load
 
->> Recalls the preset.
+ Recalls the preset.
 
->> ##### Match
+ ##### Match
 
->> Indicates if the preset is currently active.
+ Indicates if the preset is currently active.
 
->>> Adjusting a logical channel level manually will clear all preset match indicators.
+> Adjusting a logical channel level manually will clear all preset match indicators.
 
-> ##### Channels
+ ##### Channels
 
->> ##### Level
+ ##### Level
 
->> Control of the logical channel level.
+ Control of the logical channel level.
 
->>> Can either be used in real-time, or snapshotted in Q-SYS to achieve 'preset' functionality.
+> Can either be used in real-time, or snapshotted in Q-SYS to achieve 'preset' functionality.
