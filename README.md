@@ -91,40 +91,36 @@ Toggles the connection to the device.
 
 > This is a global control that displays on every page.
 
-#### Area Controls
+##### Area Number
 
- ##### Number
-
- The Area to control. Leave at '0' if unallocated.
+The Area to control. Leave at '0' if unallocated.
 
 > Area information is configured in the *Dynalite System Builder* software.
 
- ##### Status
+##### Area Status
 
- The plugin-determined status of the area. ***Avoid having the same area number in multiple slots; it won't break everything, but the feedback hasn't been fully optimised for this use case as it shouldn't exist.***
+The plugin-determined status of the area. ***Avoid having the same area number in multiple slots; it won't break everything, but the feedback hasn't been fully optimised for this use case as it shouldn't exist.***
 
 > Area Unallocated | Area is Duplicate | OK
 
- #### Presets
+#### Area Presets
 
- ##### Fade Time
+##### Preset Fade Time
 
- The fade time to recall the preset with when loaded.
+The fade time to recall the preset with when loaded.
 
- ##### Load
+##### Preset Load
 
- Recalls the preset.
+Recalls the preset.
 
- ##### Match
+##### Preset Match
 
- Indicates if the preset is currently active.
+Indicates if the preset is currently active.
 
 > Adjusting a logical channel level manually will clear all preset match indicators.
 
- ##### Channels
+##### Area Logical Channel Level
 
- ##### Level
-
- Control of the logical channel level.
+Control of the logical channel level.
 
 > Can either be used in real-time, or snapshotted in Q-SYS to achieve 'preset' functionality.
