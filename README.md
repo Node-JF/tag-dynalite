@@ -61,7 +61,7 @@ The number of logical channel controls to show in each area slot.
 ## Controls
 
 ### Area Slot
-![Area Slot](./Screenshots/Dynalite%20Plugin.jpg)
+![Area Slot](./screenshots/interface.jpg)
 
 #### IP Address
 
