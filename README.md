@@ -103,8 +103,6 @@ The plugin-determined status of the area. ***Avoid having the same area number i
 
 > Area Unallocated | Area is Duplicate | OK
 
-#### Area Presets
-
 ##### Preset Fade Time
 
 The fade time to recall the preset with when loaded.
