@@ -1,9 +1,5 @@
--- Basic Framework Plugin
--- by QSC
--- October 2020
-
 -- Information block for the plugin
---[[ #include "info.lua" ]]
+--[[ #include "src/info.lua" ]]
 
 Color = {
   White = {255, 255, 255},
@@ -38,54 +34,54 @@ end
 PageNames = { "Dashboard", "Configuration" }  --List the pages within the plugin
 function GetPages(props)
   local pages = {}
-  --[[ #include "pages.lua" ]]
+  --[[ #include "src/pages.lua" ]]
   return pages
 end
 
 -- Optional function to define model if plugin supports more than one model
 function GetModel(props)
   local model = {}
-  --[[ #include "model.lua" ]]
+  --[[ #include "src/model.lua" ]]
  return model
 end
 
 -- Define User configurable Properties of the plugin
 function GetProperties()
-  --[[ #include "properties.lua" ]]
+  --[[ #include "src/properties.lua" ]]
   return props
 end
 
 -- Optional function to define pins on the plugin that are not connected to a Control
 function GetPins(props)
   local pins = {}
-  --[[ #include "pins.lua" ]]
+  --[[ #include "src/pins.lua" ]]
   return pins
 end
 
 -- Optional function to update available properties when properties are altered by the user
 function RectifyProperties(props)
-  --[[ #include "rectify_properties.lua" ]]
+  --[[ #include "src/rectify_properties.lua" ]]
   return props
 end
 
 -- Optional function to define components used within the plugin
 function GetComponents(props)
   local components = {}
-  --[[ #include "components.lua" ]]
+  --[[ #include "src/components.lua" ]]
   return components
 end
 
 -- Optional function to define wiring of components used within the plugin
 function GetWiring(props)
   local wiring = {}
-  --[[ #include "wiring.lua" ]]
+  --[[ #include "src/wiring.lua" ]]
   return wiring
 end
 
 -- Defines the Controls used within the plugin
 function GetControls(props)
   local ctrls = {}
-  --[[ #include "controls.lua" ]]
+  --[[ #include "src/controls.lua" ]]
   return ctrls
 end
 
@@ -93,7 +89,7 @@ end
 function GetControlLayout(props)
   local layout = {}
   local graphics = {}
-  --[[ #include "layout.lua" ]]
+  --[[ #include "src/layout.lua" ]]
   return layout, graphics
 end
 
@@ -105,23 +101,23 @@ if Controls then
   max_controls = #Controls["area_number"]
   pollTimer, queueTimer = Timer.New(), Timer.New()
   
-  --[[ #include "runtime/commands.lua" ]]
+  --[[ #include "src/runtime/commands.lua" ]]
 
-  --[[ #include "runtime/utility_functions.lua" ]]
+  --[[ #include "src/runtime/utility_functions.lua" ]]
 
   if Properties["Connection Type"].Value == "TCP" then
 
-    --[[ #include "runtime/connection-type/tcp.lua" ]]
+    --[[ #include "src/runtime/connection-type/tcp.lua" ]]
 
   elseif Properties["Connection Type"].Value == "Serial" then
     
-    --[[ #include "runtime/connection-type/serial.lua" ]]
+    --[[ #include "src/runtime/connection-type/serial.lua" ]]
   
   end
 
-  --[[ #include "runtime/connection-type/both.lua" ]]
+  --[[ #include "src/runtime/connection-type/both.lua" ]]
 
-  --[[ #include "runtime/eventhandlers.lua" ]]
+  --[[ #include "src/runtime/eventhandlers.lua" ]]
 
   DisableTcpControls((Properties["Connection Type"].Value == 'Serial'))
   
