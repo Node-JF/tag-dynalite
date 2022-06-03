@@ -38,13 +38,6 @@ function GetPages(props)
   return pages
 end
 
--- Optional function to define model if plugin supports more than one model
-function GetModel(props)
-  local model = {}
-  --[[ #include "src/model.lua" ]]
- return model
-end
-
 -- Define User configurable Properties of the plugin
 function GetProperties()
   --[[ #include "src/properties.lua" ]]
@@ -62,20 +55,6 @@ end
 function RectifyProperties(props)
   --[[ #include "src/rectify_properties.lua" ]]
   return props
-end
-
--- Optional function to define components used within the plugin
-function GetComponents(props)
-  local components = {}
-  --[[ #include "src/components.lua" ]]
-  return components
-end
-
--- Optional function to define wiring of components used within the plugin
-function GetWiring(props)
-  local wiring = {}
-  --[[ #include "src/wiring.lua" ]]
-  return wiring
 end
 
 -- Defines the Controls used within the plugin
