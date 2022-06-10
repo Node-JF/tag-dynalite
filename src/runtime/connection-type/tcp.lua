@@ -9,7 +9,7 @@ sock.ReconnectTimeout = 1
 
 function Connect()
 
-  isDyNetText = (Properties['DyNet Protocol'].Value == "Text")
+  isDyNetText = (Properties['Protocol'].Value == "DyNet Text")
   
   ResetTimers()
   

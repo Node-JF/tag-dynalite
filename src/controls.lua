@@ -94,9 +94,9 @@ if props["Enable Logical Channels"].Value == "Yes" then
         table.insert(ctrls, {
             Name = string.format("channel_%d", channel),
             ControlType = "Knob",
-            ControlUnit = (props['DyNet Protocol'].Value == "Text") and "Percent" or "Integer",
-            Min = (props['DyNet Protocol'].Value == "Text") and 0 or 255,
-            Max = (props['DyNet Protocol'].Value == "Text") and 100 or 0,
+            ControlUnit = (props['Protocol'].Value == "DyNet Text") and "Percent" or "Integer",
+            Min = (props['Protocol'].Value == "DyNet Text") and 0 or 255,
+            Max = (props['Protocol'].Value == "DyNet Text") and 100 or 0,
             UserPin = true,
             PinStyle = "Both",
             Count = count

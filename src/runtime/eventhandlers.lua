@@ -69,7 +69,7 @@ for position, area in ipairs(Controls["area_number"]) do
       print(string.format("Position [%s] Preset is Valid", position))
       area_props[position].validPreset = true
       
-      Enqueue(Protocol['RecallPreset'][Properties['DyNet Protocol'].Value](preset, area.String, math.floor(Controls[string.format("fade_time_%d", preset)][position].Value * 1000)), 1)
+      Enqueue(Protocol['RecallPreset'][Properties['Protocol'].Value](preset, area.String, math.floor(Controls[string.format("fade_time_%d", preset)][position].Value * 1000)), 1)
       
       GetCurrentPresets(area.String, position)
       
@@ -118,7 +118,7 @@ for position, area in ipairs(Controls["area_number"]) do
           local level = math.floor(ctl.Value)
           
           -- write this command directly so there's no delay which would occur by queueing
-          Send(Protocol['SetLevel'][Properties['DyNet Protocol'].Value](channel, level, area.String))
+          Send(Protocol['SetLevel'][Properties['Protocol'].Value](channel, level, area.String))
           area_props[position].canUpdate[channel] = true
         
           area_props[position].isMovingTimers[channel]:Start(1)

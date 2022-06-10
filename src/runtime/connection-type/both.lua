@@ -180,7 +180,7 @@ function GetCurrentPresets(area, position)
   
   print(string.format("Getting Preset for Area [%s]", area and area or "-"))
   
-  Enqueue(Protocol['RequestCurrentPresets'][Properties['DyNet Protocol'].Value](area))
+  Enqueue(Protocol['RequestCurrentPresets'][Properties['Protocol'].Value](area))
   
 end
 
@@ -194,7 +194,7 @@ function GetChannelLevels(area)
   
   for ch = 1, Properties["Logical Channels"].Value do
     
-    Enqueue(Protocol['RequestCurrentLevels'][Properties['DyNet Protocol'].Value](ch, area))
+    Enqueue(Protocol['RequestCurrentLevels'][Properties['Protocol'].Value](ch, area))
   end
   
 end

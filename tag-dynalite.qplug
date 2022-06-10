@@ -1,8 +1,8 @@
 -- Information block for the plugin
 PluginInfo = {
   Name = "TAG~Dynalite~Envision Gateway",
-  Version = "2.0",
-  BuildVersion = "1.1.0.18",
+  Version = "2.1",
+  BuildVersion = "2.0.0.0",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
   Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB).",
   ShowDebug = true,
@@ -52,13 +52,13 @@ end
 function GetProperties()
   local props = {
     {
-      Name = "DyNet Protocol",
+      Name = "Protocol",
       Type = "enum",
       Choices = {
-        "2",
-        "Text"
+        "DyNet 1",
+        "DyNet Text"
       },
-      Value = "2"
+      Value = "DyNet 1"
     },
     {
       Name = "Enable Polling",
@@ -131,8 +131,8 @@ end
 -- Optional function to update available properties when properties are altered by the user
 function RectifyProperties(props)
   props["Logical Channels"].IsHidden = props["Enable Logical Channels"].Value == "No"
-  props["Enable Polling"].IsHidden = props["DyNet Protocol"].Value == "Text"
-  props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No" or props["DyNet Protocol"].Value == "Text"
+  props["Enable Polling"].IsHidden = props["Protocol"].Value == "DyNet Text"
+  props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No" or props["Protocol"].Value == "DyNet Text"
   -- props["Connection Type"].IsHidden = props["DyNet Protocol"].Value == "Text"
   -- if props["DyNet Protocol"].Value == "Text" then
   --   props["Connection Type"].Value = "TCP"
@@ -239,9 +239,9 @@ function GetControls(props)
           table.insert(ctrls, {
               Name = string.format("channel_%d", channel),
               ControlType = "Knob",
-              ControlUnit = (props['DyNet Protocol'].Value == "Text") and "Percent" or "Integer",
-              Min = (props['DyNet Protocol'].Value == "Text") and 0 or 255,
-              Max = (props['DyNet Protocol'].Value == "Text") and 100 or 0,
+              ControlUnit = (props['Protocol'].Value == "DyNet Text") and "Percent" or "Integer",
+              Min = (props['Protocol'].Value == "DyNet Text") and 0 or 255,
+              Max = (props['Protocol'].Value == "DyNet Text") and 100 or 0,
               UserPin = true,
               PinStyle = "Both",
               Count = count
@@ -303,7 +303,7 @@ function GetControlLayout(props)
   
   table.insert(graphics, {
     Type = "Label",
-    Text = (props['Connection Type'].Value == "Serial") and "TCP Controls Disabled" or (props['DyNet Protocol'].Value == "Text") and "DyNet Text Uses Port 23" or "Default Server Port is 50000",
+    Text = (props['Connection Type'].Value == "Serial") and "TCP Controls Disabled" or (props['Protocol'].Value == "DyNet Text") and "DyNet Text Uses Port 23" or "Default Server Port is 50000",
     Size = {Defaults.TextBoxSize[1] - 36, 16},
     Position = {Defaults.LabelSize[1] + 36, 206},
     HTextAlign = "Center",
@@ -531,9 +531,9 @@ if Controls then
   
     ['WhoAreYou'] = {
     
-      ['Text'] = "WhoAreYou",
+      ['DyNet Text'] = "WhoAreYou",
       
-      ['2'] = function()
+      ['DyNet 1'] = function()
       
       end
       
@@ -541,11 +541,11 @@ if Controls then
     
     ['RequestCurrentPresets'] = {
     
-      ['Text'] = function(area)
+      ['DyNet Text'] = function(area)
         return string.format("RCP %s", area)
       end,
       
-      ['2'] = function(area)
+      ['DyNet 1'] = function(area)
         return GeneratePacket({0x1C, tonumber(area), 0x00, 0x63, 0x00, 0x00, 0xFF})
       end
       
@@ -553,11 +553,11 @@ if Controls then
     
     ['RequestCurrentLevels'] = {
     
-      ['Text'] = function(channel, area)
+      ['DyNet Text'] = function(channel, area)
         return string.format("RCL %d %s", channel, area)
       end,
       
-      ['2'] = function(channel, area)
+      ['DyNet 1'] = function(channel, area)
         return GeneratePacket({0x1C, tonumber(area), tonumber(channel) - 1, 0x61, 0x00, 0x00, 0xFF})
       end
       
@@ -565,11 +565,11 @@ if Controls then
     
     ['RecallPreset'] = {
     
-      ['Text'] = function(preset, area, fade)
+      ['DyNet Text'] = function(preset, area, fade)
         return string.format("p %s %s %s 255", preset, area, fade)
       end,
       
-      ['2'] = function(preset, area, fade)
+      ['DyNet 1'] = function(preset, area, fade)
         local fade = bitstring.pack("16:int", (tonumber(fade) * 0.05))
         local hi, low = fade:sub(1, 1), fade:sub(2, 2)
         
@@ -582,11 +582,11 @@ if Controls then
     
     ['SetLevel'] = {
     
-      ['Text'] = function(channel, level, area)
+      ['DyNet Text'] = function(channel, level, area)
         return string.format('CL %d %d %d 200 255', channel, level, area)
       end,
       
-      ['2'] = function(channel, level, area)
+      ['DyNet 1'] = function(channel, level, area)
         return GeneratePacket({0x1C, tonumber(area), tonumber(channel) - 1, 0x71, tonumber(level), 0x05, 0xFF})
       end
       
@@ -617,7 +617,7 @@ if Controls then
     
     function Connect()
     
-      isDyNetText = (Properties['DyNet Protocol'].Value == "Text")
+      isDyNetText = (Properties['Protocol'].Value == "DyNet Text")
       
       ResetTimers()
       
@@ -732,7 +732,7 @@ if Controls then
     
     function Connect()
     
-      isDyNetText = (Properties['DyNet Protocol'].Value == "Text")
+      isDyNetText = (Properties['Protocol'].Value == "DyNet Text")
       
       ResetTimers()
       
@@ -1009,7 +1009,7 @@ if Controls then
     
     print(string.format("Getting Preset for Area [%s]", area and area or "-"))
     
-    Enqueue(Protocol['RequestCurrentPresets'][Properties['DyNet Protocol'].Value](area))
+    Enqueue(Protocol['RequestCurrentPresets'][Properties['Protocol'].Value](area))
     
   end
   
@@ -1023,7 +1023,7 @@ if Controls then
     
     for ch = 1, Properties["Logical Channels"].Value do
       
-      Enqueue(Protocol['RequestCurrentLevels'][Properties['DyNet Protocol'].Value](ch, area))
+      Enqueue(Protocol['RequestCurrentLevels'][Properties['Protocol'].Value](ch, area))
     end
     
   end
@@ -1176,7 +1176,7 @@ if Controls then
         print(string.format("Position [%s] Preset is Valid", position))
         area_props[position].validPreset = true
         
-        Enqueue(Protocol['RecallPreset'][Properties['DyNet Protocol'].Value](preset, area.String, math.floor(Controls[string.format("fade_time_%d", preset)][position].Value * 1000)), 1)
+        Enqueue(Protocol['RecallPreset'][Properties['Protocol'].Value](preset, area.String, math.floor(Controls[string.format("fade_time_%d", preset)][position].Value * 1000)), 1)
         
         GetCurrentPresets(area.String, position)
         
@@ -1225,7 +1225,7 @@ if Controls then
             local level = math.floor(ctl.Value)
             
             -- write this command directly so there's no delay which would occur by queueing
-            Send(Protocol['SetLevel'][Properties['DyNet Protocol'].Value](channel, level, area.String))
+            Send(Protocol['SetLevel'][Properties['Protocol'].Value](channel, level, area.String))
             area_props[position].canUpdate[channel] = true
           
             area_props[position].isMovingTimers[channel]:Start(1)

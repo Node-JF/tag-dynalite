@@ -1,6 +1,6 @@
 # Dynalite Envision Gateway
 
-This is a Q-SYS Plugin for Dynalite Envision Gateways. This Plugin can use either ***DyNet 2*** or the ***DyNet Text Protocol***.
+This is a Q-SYS Plugin for Dynalite Envision Gateways. This Plugin can use either ***DyNet 1*** or the ***DyNet Text Protocol***.
 
 > Bug reports and feature requests should be sent to Jason Foord (jf@tag.com.au).
 
@@ -14,7 +14,7 @@ See [Q-SYS Online Help File - Plugins](https://q-syshelp.qsc.com/#Schematic_Libr
 
 The protocol to use.
 
-> 2 | Text
+> DyNet 1 | DyNet Text
 
 > The Protocol of the Envision Gateway is set under the *Port Editor* tab in *Dynalite System Builder*
 
@@ -56,7 +56,7 @@ The number of logical channel controls to show in each area slot.
 
 > For DyNet Text, the value range is ***0 - 100%***
 
-> For DyNet 2, the value range is ***255 - 0***
+> For DyNet 1, the value range is ***255 - 0***
 
 ## Controls
 
@@ -77,7 +77,7 @@ The TCP port to use.
 
 > DyNet Text = 23
 
-> DyNet 2 = 49152-65535 | 50000
+> DyNet 1 = 49152-65535 | 50000
 
 #### Device Status
 

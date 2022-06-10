@@ -1,12 +1,12 @@
 local props = {
   {
-    Name = "DyNet Protocol",
+    Name = "Protocol",
     Type = "enum",
     Choices = {
-      "2",
-      "Text"
+      "DyNet 1",
+      "DyNet Text"
     },
-    Value = "2"
+    Value = "DyNet 1"
   },
   {
     Name = "Enable Polling",

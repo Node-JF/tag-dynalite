@@ -45,7 +45,7 @@ table.insert(graphics, {
 
 table.insert(graphics, {
   Type = "Label",
-  Text = (props['Connection Type'].Value == "Serial") and "TCP Controls Disabled" or (props['DyNet Protocol'].Value == "Text") and "DyNet Text Uses Port 23" or "Default Server Port is 50000",
+  Text = (props['Connection Type'].Value == "Serial") and "TCP Controls Disabled" or (props['Protocol'].Value == "DyNet Text") and "DyNet Text Uses Port 23" or "Default Server Port is 50000",
   Size = {Defaults.TextBoxSize[1] - 36, 16},
   Position = {Defaults.LabelSize[1] + 36, 206},
   HTextAlign = "Center",
