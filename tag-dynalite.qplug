@@ -2,7 +2,7 @@
 PluginInfo = {
   Name = "TAG~Dynalite~Envision Gateway",
   Version = "2.2",
-  BuildVersion = "2.2.1.0",
+  BuildVersion = "2.2.3.0",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
   Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB).",
   ShowDebug = true,
@@ -234,14 +234,29 @@ function GetControls(props)
   end
   
   if props["Enable Logical Channels"].Value == "Yes" then
+  
+      local min, max 
+      if (props['Protocol'].Value == "DyNet Text") then
+          min = 0
+          max = 100
+      elseif (props['Protocol'].Value == "DyNet 1") then
+          if props["Connection Type"].Value == "TCP" then
+              min = 255
+              max = 0
+          elseif props["Connection Type"].Value == "Serial" then
+              min = 255
+              max = 1
+          end
+      end
+  
       for channel = 1, props["Logical Channels"].Value do
   
           table.insert(ctrls, {
               Name = string.format("channel_%d", channel),
               ControlType = "Knob",
               ControlUnit = (props['Protocol'].Value == "DyNet Text") and "Percent" or "Integer",
-              Min = (props['Protocol'].Value == "DyNet Text") and 0 or 255,
-              Max = (props['Protocol'].Value == "DyNet Text") and 100 or 0,
+              Min = min,
+              Max = max,
               UserPin = true,
               PinStyle = "Both",
               Count = count
@@ -1111,9 +1126,9 @@ if Controls then
           local target = string.byte(data:sub(5, 5))
           
           -- convert to fader range
-          target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
+          -- target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
           
-          target = math.floor(target)
+          -- target = math.floor(target)
           
           UpdateActiveChannels(channel, area, target, current)
           

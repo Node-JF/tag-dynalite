@@ -282,9 +282,9 @@ function ParseData(data)
         local target = string.byte(data:sub(5, 5))
         
         -- convert to fader range
-        target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
+        -- target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
         
-        target = math.floor(target)
+        -- target = math.floor(target)
         
         UpdateActiveChannels(channel, area, target, current)
         

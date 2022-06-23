@@ -89,14 +89,29 @@ for preset = 1, props["Presets"].Value do
 end
 
 if props["Enable Logical Channels"].Value == "Yes" then
+
+    local min, max 
+    if (props['Protocol'].Value == "DyNet Text") then
+        min = 0
+        max = 100
+    elseif (props['Protocol'].Value == "DyNet 1") then
+        if props["Connection Type"].Value == "TCP" then
+            min = 255
+            max = 0
+        elseif props["Connection Type"].Value == "Serial" then
+            min = 255
+            max = 1
+        end
+    end
+
     for channel = 1, props["Logical Channels"].Value do
 
         table.insert(ctrls, {
             Name = string.format("channel_%d", channel),
             ControlType = "Knob",
             ControlUnit = (props['Protocol'].Value == "DyNet Text") and "Percent" or "Integer",
-            Min = (props['Protocol'].Value == "DyNet Text") and 0 or 255,
-            Max = (props['Protocol'].Value == "DyNet Text") and 100 or 0,
+            Min = min,
+            Max = max,
             UserPin = true,
             PinStyle = "Both",
             Count = count
