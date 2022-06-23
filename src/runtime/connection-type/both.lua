@@ -270,7 +270,33 @@ function ParseData(data)
         UpdateActiveChannels(channel, area, target, current)
         
       end
+    
+    elseif (string.byte(data:sub(1, 1)) == 0x1C) then
       
+      local opcode = string.byte(data:sub(4, 4))
+
+      if (opcode == 0x60) then
+      
+        local area = string.byte(data:sub(2, 2))
+        local channel = string.byte(data:sub(3, 3))
+        local target = string.byte(data:sub(5, 5))
+        
+        -- convert to fader range
+        target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
+        
+        target = math.floor(target)
+        
+        UpdateActiveChannels(channel, area, target, current)
+        
+      elseif (opcode == 0x62) then
+      
+        local area = string.byte(data:sub(2, 2))
+        local preset = string.byte(data:sub(3, 3))
+        
+        SetPresetLEDs(preset, area)
+        
+      end
+
     end
   end
   

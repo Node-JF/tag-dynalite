@@ -1,8 +1,8 @@
 -- Information block for the plugin
 PluginInfo = {
   Name = "TAG~Dynalite~Envision Gateway",
-  Version = "2.1",
-  BuildVersion = "2.0.0.0",
+  Version = "2.2",
+  BuildVersion = "2.2.0.1",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
   Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB).",
   ShowDebug = true,
@@ -1099,7 +1099,33 @@ if Controls then
           UpdateActiveChannels(channel, area, target, current)
           
         end
+      
+      elseif (string.byte(data:sub(1, 1)) == 0x1C) then
         
+        local opcode = string.byte(data:sub(4, 4))
+  
+        if (opcode == 0x60) then
+        
+          local area = string.byte(data:sub(2, 2))
+          local channel = string.byte(data:sub(3, 3))
+          local target = string.byte(data:sub(5, 5))
+          
+          -- convert to fader range
+          target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
+          
+          target = math.floor(target)
+          
+          UpdateActiveChannels(channel, area, target, current)
+          
+        elseif (opcode == 0x62) then
+        
+          local area = string.byte(data:sub(2, 2))
+          local preset = string.byte(data:sub(3, 3))
+          
+          SetPresetLEDs(preset, area)
+          
+        end
+  
       end
     end
     
