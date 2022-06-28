@@ -99,7 +99,9 @@ The Area to control. Leave at '0' if unallocated.
 
 ##### Area Status
 
-The plugin-determined status of the area. ***Avoid having the same area number in multiple slots; it won't break everything, but the feedback hasn't been fully optimised for this use case as it shouldn't exist.***
+The plugin-determined status of the area.
+
+> :warning: ***Avoid having the same area number in multiple slots; it won't break everything, but the feedback hasn't been fully optimised for this use case as it shouldn't exist.***
 
 > Area Unallocated | Area is Duplicate | OK
 
