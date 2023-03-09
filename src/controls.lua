@@ -8,14 +8,14 @@ table.insert(ctrls, {
 })
 
 table.insert(ctrls, {
-  Name = "port",
-  ControlType = "Knob",
-  ControlUnit = "Integer",
-  Min = 49152,
-  Max = 65535,
-  DefaultValue = 50000,
-  UserPin = true,
-  PinStyle = "Both"
+    Name = "port",
+    ControlType = "Knob",
+    ControlUnit = "Integer",
+    Min = 49152,
+    Max = 65535,
+    DefaultValue = 50000,
+    UserPin = true,
+    PinStyle = "Both"
 })
 
 table.insert(ctrls, {
@@ -34,7 +34,6 @@ table.insert(ctrls, {
     PinStyle = "Both"
 })
 
-
 table.insert(ctrls, {
     Name = "area_number",
     ControlType = "Knob",
@@ -47,13 +46,38 @@ table.insert(ctrls, {
 })
 
 table.insert(ctrls, {
-  Name = "area_status",
-  ControlType = "Indicator",
-  IndicatorType = "Status",
-  UserPin = true,
-  PinStyle = "Output",
-  Count = count
+    Name = "area_status",
+    ControlType = "Indicator",
+    IndicatorType = "Status",
+    UserPin = true,
+    PinStyle = "Output",
+    Count = count
 })
+
+if props["Protocol"].Value == "DyNet 1" then
+    -- should be an array of 8 buttons to set bits
+    for byte = 0, 7 do
+        table.insert(ctrls, {
+            Name = string.format("join_byte_%s", byte),
+            ControlType = "Knob",
+            ControlUnit = "Integer",
+            Min = 0,
+            Max = 1,
+            DefaultValue = 1,
+            UserPin = true,
+            PinStyle = "Both",
+            Count = count
+        })
+    end
+
+    table.insert(ctrls, {
+        Name = "join_hex",
+        ControlType = "Text",
+        UserPin = true,
+        PinStyle = "Output",
+        Count = count
+    })
+end
 
 for preset = 1, props["Presets"].Value do
 
@@ -90,7 +114,7 @@ end
 
 if props["Enable Logical Channels"].Value == "Yes" then
 
-    local min, max 
+    local min, max
     if (props['Protocol'].Value == "DyNet Text") then
         min = 0
         max = 100

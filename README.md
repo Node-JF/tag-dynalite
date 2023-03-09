@@ -101,6 +101,20 @@ The Area to control. Leave at '0' if unallocated.
 
 > Area information is configured in the *Dynalite System Builder* software.
 
+##### Join
+
+Set bits for the `join` byte.
+
+8 seperate bit controls fron *0-1*, and a text display that shows the compiled `join` byte.
+
+> :warning: The `join` byte does not target a single matching hex value, but rather acts as a bitwise AND mask. It is important to understand how the `join` byte works before modifying it. This plugin provides a similar interface to *Dynalite System Builder* when setting the `join` byte. 
+
+> :warning: Feedback may break when joining areas. If you are having too many issues, consider using a more modern approach to area joining such as base areas.
+
+> DyNet 1 only supports areas up to 255. If you are working with DyNet 2 areas greater than 255, you can perform address translations on the DyNet 2 gateway.
+
+> Area information is configured in the *Dynalite System Builder* software.
+
 ##### Area Status
 
 The plugin-determined status of the area.

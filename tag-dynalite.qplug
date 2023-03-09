@@ -1,8 +1,8 @@
 -- Information block for the plugin
 PluginInfo = {
   Name = "TAG~Dynalite~Envision Gateway",
-  Version = "2.2",
-  BuildVersion = "2.2.3.0",
+  Version = "2.3",
+  BuildVersion = "2.3.0.34",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
   Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB).",
   ShowDebug = true,
@@ -153,14 +153,14 @@ function GetControls(props)
   })
   
   table.insert(ctrls, {
-    Name = "port",
-    ControlType = "Knob",
-    ControlUnit = "Integer",
-    Min = 49152,
-    Max = 65535,
-    DefaultValue = 50000,
-    UserPin = true,
-    PinStyle = "Both"
+      Name = "port",
+      ControlType = "Knob",
+      ControlUnit = "Integer",
+      Min = 49152,
+      Max = 65535,
+      DefaultValue = 50000,
+      UserPin = true,
+      PinStyle = "Both"
   })
   
   table.insert(ctrls, {
@@ -179,7 +179,6 @@ function GetControls(props)
       PinStyle = "Both"
   })
   
-  
   table.insert(ctrls, {
       Name = "area_number",
       ControlType = "Knob",
@@ -192,13 +191,38 @@ function GetControls(props)
   })
   
   table.insert(ctrls, {
-    Name = "area_status",
-    ControlType = "Indicator",
-    IndicatorType = "Status",
-    UserPin = true,
-    PinStyle = "Output",
-    Count = count
+      Name = "area_status",
+      ControlType = "Indicator",
+      IndicatorType = "Status",
+      UserPin = true,
+      PinStyle = "Output",
+      Count = count
   })
+  
+  if props["Protocol"].Value == "DyNet 1" then
+      -- should be an array of 8 buttons to set bits
+      for byte = 0, 7 do
+          table.insert(ctrls, {
+              Name = string.format("join_byte_%s", byte),
+              ControlType = "Knob",
+              ControlUnit = "Integer",
+              Min = 0,
+              Max = 1,
+              DefaultValue = 1,
+              UserPin = true,
+              PinStyle = "Both",
+              Count = count
+          })
+      end
+  
+      table.insert(ctrls, {
+          Name = "join_hex",
+          ControlType = "Text",
+          UserPin = true,
+          PinStyle = "Output",
+          Count = count
+      })
+  end
   
   for preset = 1, props["Presets"].Value do
   
@@ -235,7 +259,7 @@ function GetControls(props)
   
   if props["Enable Logical Channels"].Value == "Yes" then
   
-      local min, max 
+      local min, max
       if (props['Protocol'].Value == "DyNet Text") then
           min = 0
           max = 100
@@ -386,7 +410,7 @@ function GetControlLayout(props)
   
   table.insert(graphics, {
       Type = "Header",
-      Text = "AREA CONFIGURATION",
+      Text = "SLOT CONFIGURATION",
       Size = {max_width, 16},
       Position = {0, starting_depth},
       Font = "Roboto",
@@ -419,6 +443,49 @@ function GetControlLayout(props)
     Size = {Defaults.StatusSize[1] - 41, 16},
     Position = {Defaults.LabelSize[1] + 41, starting_depth + 22},
   }
+  
+  if props["Protocol"].Value == "DyNet 1" then
+      table.insert(graphics, {
+          Type = "Label",
+          Text = "Join",
+          Size = Defaults.LabelSize,
+          Position = {0, starting_depth + 42},
+          HTextAlign = "Left",
+          Font = Defaults.Font,
+          FontSize = Defaults.FontSize,
+      })
+  
+      for byte = 0, 7 do
+          layout[string.format("join_byte_%s %d", byte, page_index)] = {
+              PrettyName = string.format("Area Slot %d~Join Byte %s", page_index, byte),
+              Style = "Text",
+              TextBoxStyle = "Normal",
+              Size = {20, 16},
+              Position = {Defaults.LabelSize[1] + (byte * 22), starting_depth + 42},
+          }
+      end
+  
+      layout[string.format("join_hex %d", page_index)] = {
+          PrettyName = string.format("Area Slot %d~Join Hex", page_index),
+          Style = "Text",
+          TextBoxStyle = "Normal",
+          Color = {194, 194, 194},
+          IsReadOnly = true,
+          Size = {52, 16},
+          Position = {Defaults.LabelSize[1] + (8 * 22), starting_depth + 42},
+      }
+  end
+  
+  -- table.insert(graphics, {
+  --     Type = "Label",
+  --     Text = "Default Join ID is 255",
+  --     Size = {Defaults.TextBoxSize[1] - 36, 16},
+  --     Position = {Defaults.LabelSize[1] + 36, starting_depth + 42},
+  --     HTextAlign = "Center",
+  --     Font = "Roboto",
+  --     FontSize = 10,
+  --     FontStyle = "Italic"
+  -- }) 
   
   local alt = true
   local x = 0
@@ -556,12 +623,12 @@ if Controls then
     
     ['RequestCurrentPresets'] = {
     
-      ['DyNet Text'] = function(area)
+      ['DyNet Text'] = function(area) -- can i do join values with dynet text?
         return string.format("RCP %s", area)
       end,
       
-      ['DyNet 1'] = function(area)
-        return GeneratePacket({0x1C, tonumber(area), 0x00, 0x63, 0x00, 0x00, 0xFF})
+      ['DyNet 1'] = function(area, join)
+        return GeneratePacket({0x1C, tonumber(area), 0x00, 0x63, 0x00, 0x00, join})
       end
       
     },
@@ -572,8 +639,8 @@ if Controls then
         return string.format("RCL %d %s", channel, area)
       end,
       
-      ['DyNet 1'] = function(channel, area)
-        return GeneratePacket({0x1C, tonumber(area), tonumber(channel) - 1, 0x61, 0x00, 0x00, 0xFF})
+      ['DyNet 1'] = function(channel, area, join)
+        return GeneratePacket({0x1C, tonumber(area), tonumber(channel) - 1, 0x61, 0x00, 0x00, join})
       end
       
     },
@@ -584,13 +651,13 @@ if Controls then
         return string.format("p %s %s %s 255", preset, area, fade)
       end,
       
-      ['DyNet 1'] = function(preset, area, fade)
+      ['DyNet 1'] = function(preset, area, fade, join)
         local fade = bitstring.pack("16:int", (tonumber(fade) * 0.05))
         local hi, low = fade:sub(1, 1), fade:sub(2, 2)
         
         --print( string.format( "[%X][%X]", string.byte(low), string.byte(hi) ) )
         
-        return GeneratePacket({0x1C, tonumber(area), tonumber(preset) - 1, 0x65, string.byte(low), string.byte(hi), 0xFF})
+        return GeneratePacket({0x1C, tonumber(area), tonumber(preset) - 1, 0x65, string.byte(low), string.byte(hi), join})
       end
       
     },
@@ -601,8 +668,8 @@ if Controls then
         return string.format('CL %d %d %d 200 255', channel, level, area)
       end,
       
-      ['DyNet 1'] = function(channel, level, area)
-        return GeneratePacket({0x1C, tonumber(area), tonumber(channel) - 1, 0x71, tonumber(level), 0x05, 0xFF})
+      ['DyNet 1'] = function(channel, level, area, join)
+        return GeneratePacket({0x1C, tonumber(area), tonumber(channel) - 1, 0x71, tonumber(level), 0x05, join})
       end
       
     },
@@ -617,6 +684,23 @@ if Controls then
   function DisableTcpControls(bool)
     Controls["ip_address"].IsDisabled = bool
     Controls["port"].IsDisabled = bool
+  end
+  
+  function getJoin(position)
+    if Properties["Protocol"].Value ~= "DyNet 1" then return 0xFF end
+    local join
+    local bits = ''
+  
+    for byte = 0, 7 do
+      local bit = Controls[string.format('join_byte_%d', byte)][position].String
+      bits = bits .. bit
+    end
+  
+    print(bits)
+    join = string.byte( bitstring.frombinstream(bits) )
+    
+    Controls[string.format('join_hex')][position].String = bitstring.hexstream( bitstring.pack('8:int', join) )
+    return join
   end
 
   if Properties["Connection Type"].Value == "TCP" then
@@ -930,12 +1014,28 @@ if Controls then
   
   
   
-  function GetPositionsFromArea(area)
+  function GetPositionsFromArea(area, join) -- update this to also accept a join value and match to that
     
     local tbl = {}
+  
+    -- bitmatch the join values
+    local function matchJoinValues(configuredJoin, receivedJoin) 
+      if not receivedJoin then return true end -- if no received join, just return true so it only matches the area value
+      local configuredJoinBits = bitstring.binstream( bitstring.pack('8:int', configuredJoin) )
+      local receivedJoinBits = bitstring.binstream( bitstring.pack('8:int', receivedJoin) )
+      print( string.format('Matching Join Bits: [%s] to [%s]', receivedJoinBits, configuredJoinBits) )
+      for i = 1, 8 do
+        if string.sub(configuredJoinBits, i, i) == '1' and string.sub(receivedJoinBits, i, i) == '1' then
+          print( string.format('Matched at Bit [%d]', i) )
+          return true
+        end
+      end
+      return false
+    end
     
     for i, ctl in ipairs(Controls["area_number"]) do
-      if math.floor(ctl.Value) == tonumber(area) then
+      
+      if ( math.floor(ctl.Value) == tonumber(area) ) and matchJoinValues(area_props[i].join, join) then
         table.insert(tbl, i)
       end
     end
@@ -944,12 +1044,12 @@ if Controls then
     
   end
   
-  function SetPresetLEDs(preset, area)
+  function SetPresetLEDs(preset, area, join)
   
     if (preset ~= 0) then print(string.format("Area [%s], is Updating to Preset [%d]", area, preset)) end
     
     -- get control positions for this area
-    positions = GetPositionsFromArea(area)
+    positions = GetPositionsFromArea(area, join)
       
     -- for all returned positons, do;
     for _, position in ipairs(positions) do
@@ -964,12 +1064,12 @@ if Controls then
     end
   end
   
-  function UpdateActiveChannels(channel, area, target, current)
+  function UpdateActiveChannels(channel, area, target, current, join)
   
     if (Properties["Enable Logical Channels"].Value == "No") then return end
   
     -- get control positions for this area
-    positions = GetPositionsFromArea(area)
+    positions = GetPositionsFromArea(area, join)
     
     channel = tonumber(channel)
     
@@ -987,10 +1087,10 @@ if Controls then
     end
   end
   
-  function AreaIsDuplicate(area)
+  function AreaIsDuplicate(area, position)
     matches = 0
     for i, c in ipairs(Controls['area_number']) do
-      if (c.String == area) then matches = matches + 1 end
+      if (c.String == area and area_props[i].join == area_props[position].join) then matches = matches + 1 end
       if (matches > 1) then return true end
     end
     return false
@@ -1015,7 +1115,7 @@ if Controls then
       
       return
       
-    elseif AreaIsDuplicate(area) then
+    elseif AreaIsDuplicate(area, position) then
       
       Controls['area_status'][position].Value = 1
       Controls['area_status'][position].String = "Area is Duplicate"
@@ -1024,11 +1124,11 @@ if Controls then
     
     print(string.format("Getting Preset for Area [%s]", area and area or "-"))
     
-    Enqueue(Protocol['RequestCurrentPresets'][Properties['Protocol'].Value](area))
+    Enqueue(Protocol['RequestCurrentPresets'][Properties['Protocol'].Value](area, area_props[position].join))
     
   end
   
-  function GetChannelLevels(area)
+  function GetChannelLevels(area, position)
     
     if Properties["Enable Logical Channels"].Value == "No" then return end 
   
@@ -1038,7 +1138,7 @@ if Controls then
     
     for ch = 1, Properties["Logical Channels"].Value do
       
-      Enqueue(Protocol['RequestCurrentLevels'][Properties['Protocol'].Value](ch, area))
+      Enqueue(Protocol['RequestCurrentLevels'][Properties['Protocol'].Value](ch, area, area_props[position].join))
     end
     
   end
@@ -1089,12 +1189,13 @@ if Controls then
     
       print(string.format("Data:%s", hex))
     
-      if (string.byte(data:sub(1, 1)) == 0xAC) then
+      if (string.byte(data:sub(1, 1)) == 0xAC) then -- dynet 2 response
       
         if (string.byte(data:sub(2, 2)) == 0x03) then
         
           local area = string.byte(data:sub(8, 8))
           local preset = string.byte(data:sub(12, 12))
+          -- local join = string.byte(data:sub(9, 9))
           
           SetPresetLEDs(preset, area)
           
@@ -1115,10 +1216,11 @@ if Controls then
           
         end
       
-      elseif (string.byte(data:sub(1, 1)) == 0x1C) then
+      elseif (string.byte(data:sub(1, 1)) == 0x1C) then -- dynet 1 logical response
         
         local opcode = string.byte(data:sub(4, 4))
         local area = string.byte(data:sub(2, 2))
+        local join = string.byte(data:sub(7, 7))
   
         if (opcode == 0x60) then
         
@@ -1130,13 +1232,13 @@ if Controls then
           
           -- target = math.floor(target)
           
-          UpdateActiveChannels(channel, area, target, current)
+          UpdateActiveChannels(channel, area, target, current, join)
           
         elseif (opcode == 0x62) then
   
           local preset = string.byte(data:sub(3, 3)) + 1
           
-          SetPresetLEDs(preset, area)
+          SetPresetLEDs(preset, area, join)
           
         end
   
@@ -1170,9 +1272,21 @@ if Controls then
         channelSpamTimers = {},
         canUpdate = {},
         isMovingTimers = {},
-        isMoving = {}
+        isMoving = {},
+        join = getJoin(area),
       })
       
+      if Properties["Protocol"].Value == "DyNet 1" then
+        -- do eventhandlers for bit controls
+        for byte = 0, 7 do
+          Controls[string.format('join_byte_%d', byte)][area].EventHandler = function()
+            area_props[area].join = getJoin(area)
+          end
+        end
+      end
+  
+  
+  
       if Properties["Enable Logical Channels"].Value == "Yes" then 
         for channel = 1, Properties["Logical Channels"].Value do
           table.insert(area_props[area].channelSpamTimers, Timer.New())
@@ -1216,7 +1330,7 @@ if Controls then
         print(string.format("Position [%s] Preset is Valid", position))
         area_props[position].validPreset = true
         
-        Enqueue(Protocol['RecallPreset'][Properties['Protocol'].Value](preset, area.String, math.floor(Controls[string.format("fade_time_%d", preset)][position].Value * 1000)), 1)
+        Enqueue(Protocol['RecallPreset'][Properties['Protocol'].Value](preset, area.String, math.floor(Controls[string.format("fade_time_%d", preset)][position].Value * 1000), area_props[position].join), 1)
         
         GetCurrentPresets(area.String, position)
         
@@ -1265,7 +1379,7 @@ if Controls then
             local level = math.floor(ctl.Value)
             
             -- write this command directly so there's no delay which would occur by queueing
-            Send(Protocol['SetLevel'][Properties['Protocol'].Value](channel, level, area.String))
+            Send(Protocol['SetLevel'][Properties['Protocol'].Value](channel, level, area.String, area_props[position].join))
             area_props[position].canUpdate[channel] = true
           
             area_props[position].isMovingTimers[channel]:Start(1)

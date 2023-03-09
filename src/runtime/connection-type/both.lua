@@ -86,12 +86,28 @@ end
 
 
 
-function GetPositionsFromArea(area)
+function GetPositionsFromArea(area, join) -- update this to also accept a join value and match to that
   
   local tbl = {}
+
+  -- bitmatch the join values
+  local function matchJoinValues(configuredJoin, receivedJoin) 
+    if not receivedJoin then return true end -- if no received join, just return true so it only matches the area value
+    local configuredJoinBits = bitstring.binstream( bitstring.pack('8:int', configuredJoin) )
+    local receivedJoinBits = bitstring.binstream( bitstring.pack('8:int', receivedJoin) )
+    print( string.format('Matching Join Bits: [%s] to [%s]', receivedJoinBits, configuredJoinBits) )
+    for i = 1, 8 do
+      if string.sub(configuredJoinBits, i, i) == '1' and string.sub(receivedJoinBits, i, i) == '1' then
+        print( string.format('Matched at Bit [%d]', i) )
+        return true
+      end
+    end
+    return false
+  end
   
   for i, ctl in ipairs(Controls["area_number"]) do
-    if math.floor(ctl.Value) == tonumber(area) then
+    
+    if ( math.floor(ctl.Value) == tonumber(area) ) and matchJoinValues(area_props[i].join, join) then
       table.insert(tbl, i)
     end
   end
@@ -100,12 +116,12 @@ function GetPositionsFromArea(area)
   
 end
 
-function SetPresetLEDs(preset, area)
+function SetPresetLEDs(preset, area, join)
 
   if (preset ~= 0) then print(string.format("Area [%s], is Updating to Preset [%d]", area, preset)) end
   
   -- get control positions for this area
-  positions = GetPositionsFromArea(area)
+  positions = GetPositionsFromArea(area, join)
     
   -- for all returned positons, do;
   for _, position in ipairs(positions) do
@@ -120,12 +136,12 @@ function SetPresetLEDs(preset, area)
   end
 end
 
-function UpdateActiveChannels(channel, area, target, current)
+function UpdateActiveChannels(channel, area, target, current, join)
 
   if (Properties["Enable Logical Channels"].Value == "No") then return end
 
   -- get control positions for this area
-  positions = GetPositionsFromArea(area)
+  positions = GetPositionsFromArea(area, join)
   
   channel = tonumber(channel)
   
@@ -143,10 +159,10 @@ function UpdateActiveChannels(channel, area, target, current)
   end
 end
 
-function AreaIsDuplicate(area)
+function AreaIsDuplicate(area, position)
   matches = 0
   for i, c in ipairs(Controls['area_number']) do
-    if (c.String == area) then matches = matches + 1 end
+    if (c.String == area and area_props[i].join == area_props[position].join) then matches = matches + 1 end
     if (matches > 1) then return true end
   end
   return false
@@ -171,7 +187,7 @@ function GetCurrentPresets(area, position)
     
     return
     
-  elseif AreaIsDuplicate(area) then
+  elseif AreaIsDuplicate(area, position) then
     
     Controls['area_status'][position].Value = 1
     Controls['area_status'][position].String = "Area is Duplicate"
@@ -180,11 +196,11 @@ function GetCurrentPresets(area, position)
   
   print(string.format("Getting Preset for Area [%s]", area and area or "-"))
   
-  Enqueue(Protocol['RequestCurrentPresets'][Properties['Protocol'].Value](area))
+  Enqueue(Protocol['RequestCurrentPresets'][Properties['Protocol'].Value](area, area_props[position].join))
   
 end
 
-function GetChannelLevels(area)
+function GetChannelLevels(area, position)
   
   if Properties["Enable Logical Channels"].Value == "No" then return end 
 
@@ -194,7 +210,7 @@ function GetChannelLevels(area)
   
   for ch = 1, Properties["Logical Channels"].Value do
     
-    Enqueue(Protocol['RequestCurrentLevels'][Properties['Protocol'].Value](ch, area))
+    Enqueue(Protocol['RequestCurrentLevels'][Properties['Protocol'].Value](ch, area, area_props[position].join))
   end
   
 end
@@ -245,12 +261,13 @@ function ParseData(data)
   
     print(string.format("Data:%s", hex))
   
-    if (string.byte(data:sub(1, 1)) == 0xAC) then
+    if (string.byte(data:sub(1, 1)) == 0xAC) then -- dynet 2 response
     
       if (string.byte(data:sub(2, 2)) == 0x03) then
       
         local area = string.byte(data:sub(8, 8))
         local preset = string.byte(data:sub(12, 12))
+        -- local join = string.byte(data:sub(9, 9))
         
         SetPresetLEDs(preset, area)
         
@@ -271,10 +288,11 @@ function ParseData(data)
         
       end
     
-    elseif (string.byte(data:sub(1, 1)) == 0x1C) then
+    elseif (string.byte(data:sub(1, 1)) == 0x1C) then -- dynet 1 logical response
       
       local opcode = string.byte(data:sub(4, 4))
       local area = string.byte(data:sub(2, 2))
+      local join = string.byte(data:sub(7, 7))
 
       if (opcode == 0x60) then
       
@@ -286,13 +304,13 @@ function ParseData(data)
         
         -- target = math.floor(target)
         
-        UpdateActiveChannels(channel, area, target, current)
+        UpdateActiveChannels(channel, area, target, current, join)
         
       elseif (opcode == 0x62) then
 
         local preset = string.byte(data:sub(3, 3)) + 1
         
-        SetPresetLEDs(preset, area)
+        SetPresetLEDs(preset, area, join)
         
       end
 

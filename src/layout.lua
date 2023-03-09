@@ -113,7 +113,7 @@ local starting_depth = 262
 
 table.insert(graphics, {
     Type = "Header",
-    Text = "AREA CONFIGURATION",
+    Text = "SLOT CONFIGURATION",
     Size = {max_width, 16},
     Position = {0, starting_depth},
     Font = "Roboto",
@@ -146,6 +146,49 @@ layout[string.format("area_status %d", page_index)] = {
   Size = {Defaults.StatusSize[1] - 41, 16},
   Position = {Defaults.LabelSize[1] + 41, starting_depth + 22},
 }
+
+if props["Protocol"].Value == "DyNet 1" then
+    table.insert(graphics, {
+        Type = "Label",
+        Text = "Join",
+        Size = Defaults.LabelSize,
+        Position = {0, starting_depth + 42},
+        HTextAlign = "Left",
+        Font = Defaults.Font,
+        FontSize = Defaults.FontSize,
+    })
+
+    for byte = 0, 7 do
+        layout[string.format("join_byte_%s %d", byte, page_index)] = {
+            PrettyName = string.format("Area Slot %d~Join Byte %s", page_index, byte),
+            Style = "Text",
+            TextBoxStyle = "Normal",
+            Size = {20, 16},
+            Position = {Defaults.LabelSize[1] + (byte * 22), starting_depth + 42},
+        }
+    end
+
+    layout[string.format("join_hex %d", page_index)] = {
+        PrettyName = string.format("Area Slot %d~Join Hex", page_index),
+        Style = "Text",
+        TextBoxStyle = "Normal",
+        Color = {194, 194, 194},
+        IsReadOnly = true,
+        Size = {52, 16},
+        Position = {Defaults.LabelSize[1] + (8 * 22), starting_depth + 42},
+    }
+end
+
+-- table.insert(graphics, {
+--     Type = "Label",
+--     Text = "Default Join ID is 255",
+--     Size = {Defaults.TextBoxSize[1] - 36, 16},
+--     Position = {Defaults.LabelSize[1] + 36, starting_depth + 42},
+--     HTextAlign = "Center",
+--     Font = "Roboto",
+--     FontSize = 10,
+--     FontStyle = "Italic"
+-- }) 
 
 local alt = true
 local x = 0
