@@ -50,16 +50,17 @@ Protocol = {
       
       --print( string.format( "[%X][%X]", string.byte(low), string.byte(hi) ) )
       local opcodes = {
+        0x00,
         0x01,
         0x02,
         0x03,
-        0x04,
         0x0A,
         0x0B,
         0x0C,
         0x0D
       }
       
+      -- preset = preset - 1
       local opcode
       local offset
       local divisions = math.floor(preset / 8)
@@ -75,7 +76,7 @@ Protocol = {
 
       opcode = opcodes[opcode]
 
-      return GeneratePacket({0x1C, tonumber(area), string.byte(low), opcode, string.byte(hi), string.byte(offset), join})
+      return GeneratePacket({0x1C, tonumber(area), string.byte(low), opcode, string.byte(hi), offset, join})
       
     end
     

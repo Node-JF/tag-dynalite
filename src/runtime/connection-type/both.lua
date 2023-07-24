@@ -81,6 +81,8 @@ function GeneratePacket(tbl)
   -- add it to the command
   table.insert(tbl, string.byte(checksum))
   
+  -- print(require('rapidjson').encode(tbl, { pretty = true }))
+  
   return tbl
 end
 
