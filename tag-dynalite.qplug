@@ -1,8 +1,8 @@
 -- Information block for the plugin
 PluginInfo = {
   Name = "TAG~Dynalite~Envision Gateway",
-  Version = "2.3",
-  BuildVersion = "2.3.0.34",
+  Version = "2.4",
+  BuildVersion = "2.4.0.2",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
   Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB).",
   ShowDebug = true,
@@ -97,6 +97,12 @@ function GetProperties()
         Value = 10
     },
     {
+      Name = "Preset Recall Mode",
+      Type = "enum",
+      Choices = {"Linear", "Non-Linear"},
+      Value = "Linear"
+    },
+    {
         Name = "Enable Logical Channels",
         Type = "enum",
         Choices = {"Yes", "No"},
@@ -133,6 +139,7 @@ function RectifyProperties(props)
   props["Logical Channels"].IsHidden = props["Enable Logical Channels"].Value == "No"
   props["Enable Polling"].IsHidden = props["Protocol"].Value == "DyNet Text"
   props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No" or props["Protocol"].Value == "DyNet Text"
+  props["Preset Recall Mode"].IsHidden = props["Protocol"].Value ~= "DyNet 1"
   -- props["Connection Type"].IsHidden = props["DyNet Protocol"].Value == "Text"
   -- if props["DyNet Protocol"].Value == "Text" then
   --   props["Connection Type"].Value = "TCP"
@@ -184,7 +191,7 @@ function GetControls(props)
       ControlType = "Knob",
       ControlUnit = "Integer",
       Min = 0,
-      Max = 250,
+      Max = 255,
       UserPin = true,
       PinStyle = "Both",
       Count = count
@@ -654,10 +661,40 @@ if Controls then
       ['DyNet 1'] = function(preset, area, fade, join)
         local fade = bitstring.pack("16:int", (tonumber(fade) * 0.05))
         local hi, low = fade:sub(1, 1), fade:sub(2, 2)
+  
+        if(Properties['Preset Recall Mode'].Value == 'Linear') then 
+          return GeneratePacket({0x1C, tonumber(area), tonumber(preset) - 1, 0x65, string.byte(low), string.byte(hi), join})
+        end
         
         --print( string.format( "[%X][%X]", string.byte(low), string.byte(hi) ) )
+        local opcodes = {
+          0x01,
+          0x02,
+          0x03,
+          0x04,
+          0x0A,
+          0x0B,
+          0x0C,
+          0x0D
+        }
         
-        return GeneratePacket({0x1C, tonumber(area), tonumber(preset) - 1, 0x65, string.byte(low), string.byte(hi), join})
+        local opcode
+        local offset
+        local divisions = math.floor(preset / 8)
+        
+        opcode = preset - (divisions * 8)
+        
+        if (opcode == 0) then 
+          opcode = 8
+          offset = divisions - 1
+        else 
+          offset = divisions
+        end 
+  
+        opcode = opcodes[opcode]
+  
+        return GeneratePacket({0x1C, tonumber(area), string.byte(low), opcode, string.byte(hi), string.byte(offset), join})
+        
       end
       
     },

@@ -39,7 +39,7 @@ table.insert(ctrls, {
     ControlType = "Knob",
     ControlUnit = "Integer",
     Min = 0,
-    Max = 250,
+    Max = 255,
     UserPin = true,
     PinStyle = "Both",
     Count = count

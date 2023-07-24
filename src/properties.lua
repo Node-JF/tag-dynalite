@@ -45,6 +45,12 @@ local props = {
       Value = 10
   },
   {
+    Name = "Preset Recall Mode",
+    Type = "enum",
+    Choices = {"Linear", "Non-Linear"},
+    Value = "Linear"
+  },
+  {
       Name = "Enable Logical Channels",
       Type = "enum",
       Choices = {"Yes", "No"},

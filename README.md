@@ -46,6 +46,12 @@ Each area slot will generate a new page.
 
 The number of preset slots available in each area slot.
 
+#### Preset Recall Mode
+
+Use opcodes `01` - `04` and `0A` - `0D` for preset recall (`Non-Linear`), or opcode `65` (`Linear`).
+
+> Linear | Non-Linear
+
 #### Enable Logical Channels
 
 Whether to show logical channel controls.
