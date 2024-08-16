@@ -121,7 +121,7 @@ if props["Enable Logical Channels"].Value == "Yes" then
     elseif (props['Protocol'].Value == "DyNet 1") then
         if props["Connection Type"].Value == "TCP" then
             min = 255
-            max = 0
+            max = 1
         elseif props["Connection Type"].Value == "Serial" then
             min = 255
             max = 1

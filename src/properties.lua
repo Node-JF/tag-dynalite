@@ -12,14 +12,14 @@ local props = {
     Name = "Enable Polling",
     Type = "enum",
     Choices = {"Yes", "No"},
-    Value = "Yes"
+    Value = "No"
   },
   {
       Name = "Poll Rate (s)",
       Type = "integer",
-      Min  = 5,
-      Max = 60,
-      Value = 5
+      Min  = 60,
+      Max = 1800,
+      Value = 600
   },
   {
     Name = "Connection Type",
@@ -48,7 +48,7 @@ local props = {
     Name = "Preset Recall Mode",
     Type = "enum",
     Choices = {"Linear", "Non-Linear"},
-    Value = "Linear"
+    Value = "Non-Linear"
   },
   {
       Name = "Enable Logical Channels",
