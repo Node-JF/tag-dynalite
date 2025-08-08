@@ -43,12 +43,12 @@ function SetStatus(value, string)
 
 end
 
-function GeneratePacket(tbl)
+function calculateChecksum(first_seven_bytes)
 
-    local sum, command = 0, ""
+    local sum = 0
 
     -- sum the table
-    for i, byte in ipairs(tbl) do sum = sum + byte end
+    for i, byte in ipairs(first_seven_bytes) do sum = sum + byte end
 
     -- pack to 8 bit signed integer
     sum = bitstring.pack("8:int", sum)
@@ -75,6 +75,16 @@ function GeneratePacket(tbl)
 
     -- add 1, then pack to 8 bit signed integer again
     local checksum = bitstring.pack("8:int", string.byte(bitstring.frombinstream(new_bin)) + 1)
+
+    return checksum
+end
+
+function GeneratePacket(tbl)
+
+    local command = ""
+
+    -- get the checksum
+    local checksum = calculateChecksum(tbl)
 
     -- add it to the command
     table.insert(tbl, string.byte(checksum))
