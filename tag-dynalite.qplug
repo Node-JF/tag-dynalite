@@ -2,7 +2,7 @@
 PluginInfo = {
   Name = "TAG~Dynalite~Envision Gateway",
   Version = "2.6",
-  BuildVersion = "2.6.1.9",
+  BuildVersion = "2.6.1.10",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
   Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB).",
   ShowDebug = true,
@@ -1237,7 +1237,7 @@ if Controls then
               buffer = #buffer > 8 and string.sub(buffer, 9) or ""
               return data
           else -- discard the first byte
-              discarded = string.sub(buffer, 1, 2)
+              local discarded = string.sub(buffer, 1, 2)
               buffer = string.sub(buffer, 2)
               print(string.format('Parser.Info: Discarding Byte [%d]', string.byte(discarded)))
           end

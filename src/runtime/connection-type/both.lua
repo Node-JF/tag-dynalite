@@ -254,7 +254,7 @@ function AssertValidData()
             buffer = #buffer > 8 and string.sub(buffer, 9) or ""
             return data
         else -- discard the first byte
-            discarded = string.sub(buffer, 1, 2)
+            local discarded = string.sub(buffer, 1, 2)
             buffer = string.sub(buffer, 2)
             print(string.format('Parser.Info: Discarding Byte [%d]', string.byte(discarded)))
         end
