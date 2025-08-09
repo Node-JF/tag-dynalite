@@ -224,11 +224,56 @@ function GetChannelLevels(area, position)
 
 end
 
-function ParseData(data)
+function AssertValidData()
 
+    local max_retries = 20
+    local count = 0
+
+    -- cut down to 8 bytes
+    while (#buffer >= 8) do
+        if (count > max_retries) then return end
+
+        local hex = GetHexDataString(buffer)
+
+        print(string.format('Parser.Received: %s', hex))
+
+        local first_seven_bytes = {}
+
+        -- check if the first 8 bytes is a valid command
+        for i = 1, 7 do table.insert(first_seven_bytes, string.byte(string.sub(buffer, i, i))) end
+
+        local maybe_checksum = string.sub(buffer, 8, 8)
+
+        local calculated_checksum = calculateChecksum(first_seven_bytes)
+
+        print(string.format('Parser.Checksum: [%d] == [%d] ? [%s]', string.byte(maybe_checksum),
+            string.byte(calculated_checksum), maybe_checksum == calculated_checksum and 'true' or 'false'))
+
+        if maybe_checksum == calculated_checksum then -- found a valid command, remove data from buffer and return data
+            local data = string.sub(buffer, 1, 8)
+            buffer = #buffer > 8 and string.sub(buffer, 9) or ""
+            return data
+        else -- discard the first byte
+            discarded = string.sub(buffer, 1, 2)
+            buffer = string.sub(buffer, 2)
+            print(string.format('Parser.Info: Discarding Byte [%d]', string.byte(discarded)))
+        end
+
+        count = count + 1
+    end
+end
+
+function GetHexDataString(data)
     local hex = ""
 
     for i = 1, data:len() do hex = hex .. string.format("[%02X]", string.byte(data:sub(i, i))) end
+
+    return hex
+end
+
+function ParseData(data)
+
+    local hex = GetHexDataString(data)
 
     if (not data) then return end
 
