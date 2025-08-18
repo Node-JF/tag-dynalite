@@ -2,7 +2,7 @@
 PluginInfo = {
   Name = "TAG~Dynalite~Envision Gateway",
   Version = "2.6",
-  BuildVersion = "2.6.1.10",
+  BuildVersion = "2.6.1.11",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
   Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB).",
   ShowDebug = true,
@@ -816,11 +816,18 @@ if Controls then
                 local data = sock:Read(sock.BufferLength)
                 ParseData(data)
             else
+                local incoming = sock:Read(sock.BufferLength)
+    
+                if (buffer == nil) then buffer = "" end
+    
                 -- append to global buffer
-                buffer = buffer .. sock:Read(sock.BufferLength)
+                buffer = buffer .. incoming
     
                 local data = AssertValidData()
-                if (data) then ParseData(data) end
+                while data do
+                    ParseData(data)
+                    data = AssertValidData()
+                end
             end
     
             queueTimer:Start(0)
@@ -869,8 +876,6 @@ if Controls then
     
     -- Services
     serial = SerialPorts[1]
-    -- sock.ReadTimeout = 0
-    -- sock.ReconnectTimeout = 1
     
     -----------------
     ----- Setup -----
@@ -927,14 +932,21 @@ if Controls then
             SetStatus(0)
     
             if (isDyNetText) then
-                local data = sock:Read(sock.BufferLength)
+                local data = serial:Read(serial.BufferLength)
                 ParseData(data)
             else
+                local incoming = serial:Read(serial.BufferLength)
+    
+                if (buffer == nil) then buffer = "" end
+    
                 -- append to global buffer
-                buffer = buffer .. sock:Read(sock.BufferLength)
+                buffer = buffer .. incoming
     
                 local data = AssertValidData()
-                if (data) then ParseData(data) end
+                while data do
+                    ParseData(data)
+                    data = AssertValidData()
+                end
             end
     
             queueTimer:Start(0)

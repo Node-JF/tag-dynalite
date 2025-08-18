@@ -71,11 +71,18 @@ sock.EventHandler = function(sock, evt, err)
             local data = sock:Read(sock.BufferLength)
             ParseData(data)
         else
+            local incoming = sock:Read(sock.BufferLength)
+
+            if (buffer == nil) then buffer = "" end
+
             -- append to global buffer
-            buffer = buffer .. sock:Read(sock.BufferLength)
+            buffer = buffer .. incoming
 
             local data = AssertValidData()
-            if (data) then ParseData(data) end
+            while data do
+                ParseData(data)
+                data = AssertValidData()
+            end
         end
 
         queueTimer:Start(0)

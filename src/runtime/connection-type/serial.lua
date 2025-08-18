@@ -1,7 +1,5 @@
 -- Services
 serial = SerialPorts[1]
--- sock.ReadTimeout = 0
--- sock.ReconnectTimeout = 1
 
 -----------------
 ----- Setup -----
@@ -58,14 +56,21 @@ serial.EventHandler = function(port, evt)
         SetStatus(0)
 
         if (isDyNetText) then
-            local data = sock:Read(sock.BufferLength)
+            local data = serial:Read(serial.BufferLength)
             ParseData(data)
         else
+            local incoming = serial:Read(serial.BufferLength)
+
+            if (buffer == nil) then buffer = "" end
+
             -- append to global buffer
-            buffer = buffer .. sock:Read(sock.BufferLength)
+            buffer = buffer .. incoming
 
             local data = AssertValidData()
-            if (data) then ParseData(data) end
+            while data do
+                ParseData(data)
+                data = AssertValidData()
+            end
         end
 
         queueTimer:Start(0)
