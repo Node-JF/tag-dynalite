@@ -8,8 +8,8 @@
         <description>Q-SYS plugin for Philips Dynalite Ethernet Gateway (PDEG) and Bridge (PDEB).</description>
     </metadata>
     <files>
-        <file src="..\README.md" target="" />
-        <file src="..\screenshots\*" target="screenshots\" />
-        <file src="..\tag-dynalite.qplug" target="" />
+        <file src="./README.md" target="" />
+        <file src="./screenshots\*" target="screenshots\" />
+        <file src="./tag-dynalite.qplug" target="" />
     </files>
 </package>
