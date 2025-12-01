@@ -1,0 +1,27 @@
+name: Publish to NuGet.org
+
+on:
+  push:
+    tags:
+      - "v*" # Trigger on version tags like v1.0.0
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      # 1) Checkout code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2) Install NuGet CLI
+      - name: Install NuGet
+        run: choco install nuget.commandline -y
+
+      # 3) Pack the .nuspec into .nupkg
+      - name: Pack NuGet Package
+        run: nuget pack Dynalite.nuspec -OutputDirectory artifacts
+
+      # 4) Push to NuGet.org
+      - name: Push to NuGet.org
+        run: nuget push artifacts\*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey ${{ secrets.NUGET_API_KEY }}
