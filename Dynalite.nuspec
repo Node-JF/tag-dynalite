@@ -9,7 +9,7 @@
     </metadata>
     <files>
         <file src="./README.md" target="" />
-        <file src="./screenshots\*" target="screenshots\" />
+        <file src="./screenshots/*" target="screenshots\" />
         <file src="./tag-dynalite.qplug" target="" />
     </files>
 </package>
