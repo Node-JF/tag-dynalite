@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
+        <readme>docs\README.md</readme>
         <id>6add4168-6655-4304-9f33-2a756b485f67</id>
         <version>2.6.0</version>
         <title>Dynalite</title>
@@ -8,7 +9,7 @@
         <description>Q-SYS plugin for Philips Dynalite Ethernet Gateway (PDEG) and Bridge (PDEB).</description>
     </metadata>
     <files>
-        <file src="./README.md" target="" />
+        <file src="./README.md" target="docs\" />
         <file src="./screenshots/*" target="screenshots\" />
         <file src="./tag-dynalite.qplug" target="" />
     </files>
