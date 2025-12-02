@@ -2,17 +2,17 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <readme>docs\README.md</readme>
-        <icon>src\logo.jpg</icon>
-        <id>Dynalite</id>
+        <icon>src\logo.png</icon>
+        <id>Phillips Dynalite</id>
         <version>2.6.0</version>
-        <title>Dynalite</title>
+        <title>Phillips Dynalite</title>
         <authors>Jason Foord</authors>
-        <description>Q-SYS plugin for Philips Dynalite Ethernet Gateway (PDEG) and Bridge (PDEB).</description>
+        <description>A Q-SYS plugin for Philips Dynalite Ethernet Gateway (PDEG) and Bridge (PDEB).</description>
     </metadata>
     <files>
         <file src=".\README.md" target="docs\" />
-        <file src=".\logo.jpg" target="src\" />
-        <file src=".\screenshots\*" target="screenshots\" />
+        <file src=".\CHANGELOG.md" target="docs\" />
+        <file src=".\logo.png" target="src\" />
         <file src=".\tag-dynalite.qplug" target="" />
     </files>
 </package>
