@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <readme>docs\README.md</readme>
-        <icon>src\logo.png</icon>
+        <icon>src\logo.jpg</icon>
         <id>Dynalite</id>
         <version>2.6.0</version>
         <title>Dynalite</title>
@@ -11,7 +11,7 @@
     </metadata>
     <files>
         <file src=".\README.md" target="docs\" />
-        <file src=".\logo.png" target="src\" />
+        <file src=".\logo.jpg" target="src\" />
         <file src=".\screenshots\*" target="screenshots\" />
         <file src=".\tag-dynalite.qplug" target="" />
     </files>
