@@ -6,3 +6,7 @@
 # 2.6
 
 - Improved buffer handling to allow for fragments.
+
+# 2.6.2
+
+- Improved parser debug logging.

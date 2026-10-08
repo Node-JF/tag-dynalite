@@ -7,8 +7,8 @@
 # *.lua
 
 # Node artifact files
-plugincompile/
-.vscode/
+# plugincompile/
+# .vscode/
 node_modules/
 dist/
 legacy/

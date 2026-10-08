@@ -1,12 +1,12 @@
 -- Information block for the plugin
+BuildVersion = "2.6.2.0"
 PluginInfo = {
-  Name = "TAG~Dynalite~Envision Gateway",
-  Version = "2.6",
-  BuildVersion = "2.6.1.11",
-  Id = "6add4168-6655-4304-9f33-2a756b485f67",
+  Name = "Phillips~Dynalite Envision Gateway ".. "["..BuildVersion.."]",
+  Version = BuildVersion,
+  Id = "6add4168-6655-4304-9f33-2a756b485f6",
+  Author = "Jason Foord (TAG)",
   Description = "A Q-SYS plugin for the Phillips Dynalite Ethernet Gateway (PDEG) and Phillips Dynalite Ethernet Bridge (PDEB).",
-  ShowDebug = true,
-  Author = "Jason Foord"
+  Manufacturer = "Phillips"
 }
 
 Color = {
@@ -1228,9 +1228,7 @@ if Controls then
       while (#buffer >= 8) do
           if (count > max_retries) then return end
   
-          local hex = GetHexDataString(buffer)
-  
-          print(string.format('Parser.Received: %s', hex))
+          if (#buffer > 8) then print(string.format('Parser.Info: Large Buffer Received ([%s] Bytes)', #buffer)) end
   
           local first_seven_bytes = {}
   
@@ -1246,6 +1244,8 @@ if Controls then
   
           if maybe_checksum == calculated_checksum then -- found a valid command, remove data from buffer and return data
               local data = string.sub(buffer, 1, 8)
+              local hex = GetHexDataString(data)
+              print(string.format('Parser.ValidCommand: %s', hex))
               buffer = #buffer > 8 and string.sub(buffer, 9) or ""
               return data
           else -- discard the first byte

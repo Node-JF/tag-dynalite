@@ -233,9 +233,7 @@ function AssertValidData()
     while (#buffer >= 8) do
         if (count > max_retries) then return end
 
-        local hex = GetHexDataString(buffer)
-
-        print(string.format('Parser.Received: %s', hex))
+        if (#buffer > 8) then print(string.format('Parser.Info: Large Buffer Received ([%s] Bytes)', #buffer)) end
 
         local first_seven_bytes = {}
 
@@ -251,6 +249,8 @@ function AssertValidData()
 
         if maybe_checksum == calculated_checksum then -- found a valid command, remove data from buffer and return data
             local data = string.sub(buffer, 1, 8)
+            local hex = GetHexDataString(data)
+            print(string.format('Parser.ValidCommand: %s', hex))
             buffer = #buffer > 8 and string.sub(buffer, 9) or ""
             return data
         else -- discard the first byte
